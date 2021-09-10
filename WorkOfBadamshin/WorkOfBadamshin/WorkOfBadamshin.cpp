@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <Windows.h>
-#include <limits>
 using namespace std;
 
 // Вывод меню на консоль
@@ -58,6 +57,8 @@ struct CompressorStation
 	int effectiveness;
 };
 
+
+
 // Создание новой трубы
 Pipe NewPipe()
 {
@@ -101,6 +102,7 @@ int main()
 		system("CLS");
 		SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 		PrintMenu();
+		cin.seekg(cin.eof());
 		getline(cin, command);
 		if (CheckCommand(command))
 		{
@@ -151,6 +153,5 @@ int main()
 				<< "Сообщение пропадёт через 5 секунд" << endl;
 			Sleep(5000);
 		}
-		while ((getchar()) != '\n');
 	}
 }
