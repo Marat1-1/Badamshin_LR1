@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <string>
 using namespace std;
 
 // Вывод меню на консоль
@@ -16,7 +17,15 @@ void PrintMenu()
 		<< "Нажмите на одну из клавиш чисел на клавиатуре: ";
 };
 
-// Структуры Трубы и КС
+// Проверка корректного ввода данных для команды
+bool CheckCommand(string command)
+{
+	if (!isdigit(command[0]) || size(command) > 1)
+		return false;
+	return true;
+}
+
+// Структура Трубы
 struct Pipe
 {
 	string id;
@@ -25,6 +34,7 @@ struct Pipe
 	bool repair;
 };
 
+//Структура КС
 struct CompressorStation
 {
 	string id;
@@ -34,51 +44,57 @@ struct CompressorStation
 	int effectiveness;
 };
 
-
 int main()
 {
-	int command;
 	setlocale(LC_ALL, "Russian");
+	string command;
 	while (true)
 	{
+		system("CLS");
 		PrintMenu();
 		cin >> command;
-		switch (command)
+		if (CheckCommand(command))
 		{
-		case 1:
-		{
-			break;
+			switch (stoi(command))
+			{
+			case 1:
+			{
+				break;
+			}
+			case 2:
+			{
+				break;
+			}
+			case 3:
+			{
+				break;
+			}
+			case 4:
+			{
+				break;
+			}
+			case 5:
+			{
+				break;
+			}
+			case 6:
+			{
+				break;
+			}
+			case 7:
+			{
+				break;
+			}
+			case 0:
+			{
+				return 0;
+			}
+			}
 		}
-		case 2:
+		else
 		{
-			break;
-		}
-		case 3:
-		{
-			break;
-		}
-		case 4:
-		{
-			break;
-		}
-		case 5:
-		{
-			break;
-		}
-		case 6:
-		{
-			break;
-		}
-		case 7:
-		{
-			break;
-		}
-		case 0:
-		{
-			return 0;
-		}
-		default:
-			cout << "Вы ввели неправильные данные!!!" << endl;
+			cout << "Некорректный ввод данных!!!" << endl;
+			cin.get();
 		}
 	}
 }
