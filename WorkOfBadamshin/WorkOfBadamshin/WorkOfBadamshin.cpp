@@ -2,7 +2,9 @@
 #include <string>
 #include <vector>
 #include <Windows.h>
+#include <ctime>
 using namespace std;
+HANDLE myHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
 // Вывод меню на консоль
 void PrintMenu()
@@ -30,9 +32,11 @@ bool CheckCommand(string command)
 // Проверка ввода числа
 bool CheckInputDigit(string number)
 {
+	if (size(number) == 0)
+		return false;
 	for (size_t i = 0; i < size(number); i++)
 	{
-		if (!isdigit(number[i]) || number[i] != '.')
+		if (!isdigit(number[i]) && number[i] != '.')
 			return false;
 	}
 	return true;
@@ -57,6 +61,26 @@ struct CompressorStation
 	int effectiveness;
 };
 
+// Фильтр на ввод значений типа double длины, диаметра
+double FilterValue(string textRequest, string textError)
+{
+	string value;
+	while (true)
+	{
+		cout << textRequest;
+		cin.seekg(cin.eof());
+		getline(cin, value);
+		if (CheckInputDigit(value))
+			return stod(value);
+		else
+		{
+			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
+			cout << textError << endl;
+			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+		}
+	}
+};
+
 
 
 // Создание новой трубы
@@ -66,10 +90,8 @@ Pipe NewPipe()
 	string strRepair;
 	cout << "Введите id трубы: ";
 	cin >> result.id;
-	cout << "Введите длину трубы: ";
-	cin >> result.length;
-	cout << "Введите диаметр трубы: ";
-	cin >> result.diameter;
+	result.length = FilterValue("Введите длину трубы (необязательно целое число): ", "Ошибка!!! Вы ввели что-то непонятное.\n Длина трубы может быть либо целым числом, либо числом с плавающей точкой, повторите вввод!!!");
+	result.diameter = FilterValue("Введите диаметр трубы (необязательно целое число): ", "Ошибка!!! Вы ввели что-то непонятное.\n Диаметр трубы может быть либо целым числом, либо числом с плавающей точкой, повторите вввод!!!");
 	cout << "Укажите находится ли труба в ремонте, если да, то введите \"y\", если же труба не в ремонте, введите \"n\": ";
 	while (true)
 	{
@@ -93,7 +115,6 @@ Pipe NewPipe()
 int main()
 {
 	setlocale(LC_ALL, "Russian");
-	HANDLE myHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 	string command;
 	vector <Pipe> vectorPipes;
 	size_t countPipes = 0, countCompessorStation = 0;
