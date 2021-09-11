@@ -1,9 +1,22 @@
 ﻿#include <iostream>
 #include <string>
 #include <vector>
+#include <conio.h>
 #include <Windows.h>
 #include <ctime>
 using namespace std;
+
+enum TableCommand
+{
+	zero = 48,
+	one = 49,
+	two = 50,
+	three = 51,
+	four = 52,
+	five = 53, 
+	six = 54,
+	seven = 55
+};
 
 // Консоль
 HANDLE myHandle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -20,16 +33,9 @@ void PrintMenu()
 		<< "6. Сохранить" << endl
 		<< "7. Загрузить" << endl
 		<< "0. Выход" << endl
-		<< "Введите число, которое и будет являться командой для программы: ";
+		<< "Итак, нажмите на нужную клавишу на клавиатуре ";
 };
 
-// Проверка корректного ввода данных для команды
-bool CheckCommand(string command)
-{
-	if (!isdigit(command[0]) || command[0] > '7' || size(command) > 1)
-		return false;
-	return true;
-}
 
 // Проверка ввода числа
 bool CheckInputDigit(string number)
@@ -42,7 +48,7 @@ bool CheckInputDigit(string number)
 			return false;
 	}
 	return true;
-}
+};
 
 // Структура Трубы
 struct Pipe
@@ -105,7 +111,7 @@ bool FilterRepair()
 			cout << "Вы ввели что-то непонятное, повторите ввод по указанным выше правилам, \"y\" - это да, \"n\" - это нет: ";
 		}
 	}
-}
+};
 
 // Создание новой трубы
 Pipe NewPipe()
@@ -113,8 +119,8 @@ Pipe NewPipe()
 	Pipe result;
 	cout << "Введите id трубы: ";
 	cin >> result.id;
-	result.length = FilterValue("Введите длину трубы (необязательно целое число): ", "Ошибка!!! Вы ввели что-то непонятное.\n Длина трубы может быть либо целым числом, либо числом с плавающей точкой, повторите вввод!!!");
-	result.diameter = FilterValue("Введите диаметр трубы (необязательно целое число): ", "Ошибка!!! Вы ввели что-то непонятное.\n Диаметр трубы может быть либо целым числом, либо числом с плавающей точкой, повторите вввод!!!");
+	result.length = FilterValue("Введите длину трубы (необязательно целое число): ", "Ошибка!!! Вы ввели что-то непонятное.\nДлина трубы может быть либо целым числом, либо числом с плавающей точкой, повторите ввод!!!");
+	result.diameter = FilterValue("Введите диаметр трубы (необязательно целое число): ", "Ошибка!!! Вы ввели что-то непонятное.\nДиаметр трубы может быть либо целым числом, либо числом с плавающей точкой, повторите ввод!!!");
 	result.repair = FilterRepair();
 	return result;
 };
@@ -122,7 +128,7 @@ Pipe NewPipe()
 int main()
 {
 	setlocale(LC_ALL, "Russian");
-	string command;
+	char command;
 	vector <Pipe> vectorPipes;
 	size_t countPipes = 0, countCompessorStation = 0;
 	while (true)
@@ -130,56 +136,57 @@ int main()
 		system("CLS");
 		SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 		PrintMenu();
-		cin.seekg(cin.eof());
-		getline(cin, command);
-		if (CheckCommand(command))
+		command = _getch();
+		switch (command)
 		{
-			switch (stoi(command))
-			{
-			case 1:
-			{
-				system("CLS");
-				cout << "ИНИЦИАЛИЗАЦИЯ ТРУБЫ" << endl;
-				vectorPipes.resize(++countPipes);
-				vectorPipes[countPipes - 1] = NewPipe();
-				break;
-			}
-			case 2:
-			{
-				break;
-			}
-			case 3:
-			{
-				break;
-			}
-			case 4:
-			{
-				break;
-			}
-			case 5:
-			{
-				break;
-			}
-			case 6:
-			{
-				break;
-			}
-			case 7:
-			{
-				break;
-			}
-			case 0:
-			{
-				return 0;
-			}
-			}
+		case one:
+		{
+			system("CLS");
+			SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
+			cout << "\t\t\t\t\t\tИНИЦИАЛИЗАЦИЯ ТРУБЫ" << endl;
+			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			vectorPipes.resize(++countPipes);
+			vectorPipes[countPipes - 1] = NewPipe();
+			break;
 		}
-		else
+		case two:
 		{
+			break;
+		}
+		case three:
+		{
+			break;
+		}
+		case four:
+		{
+			break;
+		}
+		case five:
+		{
+			break;
+		}
+		case six:
+		{
+			break;
+		}
+		case seven:
+		{
+			break;
+		}
+		case zero:
+		{
+			system("cls");
+			SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
+			cout << "Итак, вы нажали на выход, на этом программа завершила свой сеанс работы.\nДо скорой встречи! :)" << endl;
+			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			return 0;
+		}
+		default:
 			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
-			cout << "Некорректный ввод данных!!! Осуществите ввод заново!!!" << endl
+			cout << "\nНекорректный ввод данных!!! Осуществите ввод заново!!!" << endl
 				<< "Сообщение пропадёт через 5 секунд" << endl;
-			Sleep(5000);
+			Sleep(3000);
+			break;
 		}
 	}
-}
+};
