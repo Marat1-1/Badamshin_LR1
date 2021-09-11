@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include <ctime>
 using namespace std;
+
+// Консоль
 HANDLE myHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
 // Вывод меню на консоль
@@ -81,34 +83,39 @@ double FilterValue(string textRequest, string textError)
 	}
 };
 
-
+//Фильтр на ввод значения "В ремонте" для труб
+bool FilterRepair()
+{
+	string strRepair;
+	cout << "Укажите находится ли труба в ремонте, если да, то введите \"y\", если же труба не в ремонте, введите \"n\": ";
+	while (true)
+	{
+		cin.seekg(cin.eof());
+		getline(cin, strRepair);
+		if (strRepair == "y")
+		{
+			return true;
+		}
+		else if (strRepair == "n")
+		{
+			return false;
+		}
+		else
+		{
+			cout << "Вы ввели что-то непонятное, повторите ввод по указанным выше правилам, \"y\" - это да, \"n\" - это нет: ";
+		}
+	}
+}
 
 // Создание новой трубы
 Pipe NewPipe()
 {
 	Pipe result;
-	string strRepair;
 	cout << "Введите id трубы: ";
 	cin >> result.id;
 	result.length = FilterValue("Введите длину трубы (необязательно целое число): ", "Ошибка!!! Вы ввели что-то непонятное.\n Длина трубы может быть либо целым числом, либо числом с плавающей точкой, повторите вввод!!!");
 	result.diameter = FilterValue("Введите диаметр трубы (необязательно целое число): ", "Ошибка!!! Вы ввели что-то непонятное.\n Диаметр трубы может быть либо целым числом, либо числом с плавающей точкой, повторите вввод!!!");
-	cout << "Укажите находится ли труба в ремонте, если да, то введите \"y\", если же труба не в ремонте, введите \"n\": ";
-	while (true)
-	{
-		cin >> strRepair;
-		if (strRepair == "y")
-		{
-			result.repair = true;
-			break;
-		}
-		else if (strRepair == "n")
-		{
-			result.repair = false;
-			break;
-		}
-		else
-			cout << "Вы ввели что-то непонятное, повторите ввод по указанным выше правилам, \"y\" - это да, \"n\" - это нет: ";
-	}
+	result.repair = FilterRepair();
 	return result;
 };
 
