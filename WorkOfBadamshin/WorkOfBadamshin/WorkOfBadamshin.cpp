@@ -4,6 +4,7 @@
 #include <conio.h>
 #include <Windows.h>
 #include <ctime>
+
 using namespace std;
 
 enum TableCommand
@@ -54,10 +55,10 @@ struct CompressorStation
 	string name;
 	int countWorkShops;
 	int countWorkShopsInOperation;
-	int effectiveness;
+	double effectiveness;
 };
 
-// Проверка ввода числа
+// Проверка ввода числа double
 bool CheckInputDigit(string number)
 {
 	int counter = 0;
@@ -66,12 +67,80 @@ bool CheckInputDigit(string number)
 	for (size_t i = 0; i < size(number); i++)
 	{
 		if (!isdigit(number[i]))
-			if (number[i] != '.')
+			if (number[i] != ',')
 				return false;
 			else
 				counter++;
 	}
 	return counter <= 1 ? true : false;
+};
+
+// Проверка ввода числа int
+bool CheckInputDigit(string number, bool thisInt)
+{
+	if (size(number) == 0 || !isdigit(number[0]))
+		return false;
+	for (size_t i = 0; i < size(number); i++)
+	{
+		if (!isdigit(number[i]))
+			return false;
+	}
+	return true;
+}
+
+// Проверка, не состоит ли строка только из пробелов
+bool CheckCountSpace(string str)
+{
+	int counter = 0;
+	for (size_t i = 0; i < size(str); i++)
+	{
+		if (str[i] == ' ')
+			++counter;
+	}
+	if (counter == size(str))
+		return false;
+	return true;
+};
+
+
+// Фильтр на ввод id для Трубы и КС
+string FilterId(string textRequest, string textError)
+{
+	string resultId;
+	while (true)
+	{
+		cout << textRequest;
+		cin.seekg(cin.eof());
+		getline(cin, resultId);
+		if (resultId != "" && CheckCountSpace(resultId))
+			return resultId;
+		else
+		{
+			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
+			cout << textError << endl;
+			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+		}
+	}
+};
+
+// Фильтр на ввод названия КС
+string FilterNameCS(string textRequest, string textError)
+{
+	string nameCS;
+	while (true)
+	{
+		cout << textRequest;
+		cin.seekg(cin.eof());
+		getline(cin, nameCS);
+		if (nameCS != "" && CheckCountSpace(nameCS))
+			return nameCS;
+		else
+		{
+			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
+			cout << textError << endl;
+			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+		}
+	}
 };
 
 
@@ -90,6 +159,62 @@ double FilterValue(string textRequest, string textError)
 		{
 			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
 			cout << textError << endl;
+			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+		}
+	}
+};
+
+// Фильтр на ввод типа int количества цехов КС
+int FilterValue(string textRequest, string textError, bool thisInt)
+{
+	string value;
+	while (true)
+	{
+		cout << textRequest;
+		cin.seekg(cin.eof());
+		getline(cin, value);
+		if (CheckInputDigit(value, true))
+			return stoi(value);
+		else
+		{
+			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
+			cout << textError << endl;
+			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+		}
+	}
+};
+
+// Фильтр на ввод количества цехов КС
+int FilterCountWorkShopsOperation(CompressorStation& cs)
+{
+	int value;
+	while (true)
+	{
+		value = FilterValue("Введите количество цехов в работе: ", "Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек и т.д.", true);
+		if (value <= cs.countWorkShops)
+			return value;
+		else
+		{
+			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
+			cout << "Простите, но количество цехов в работе не может превышать общее количество цехов, осуществите ввод по новой!" << endl;
+			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+		}
+	}
+};
+
+// Фильтр на ввод значения эффективности для КС
+double FilterEffectiveness()
+{
+	double value;
+	while (true)
+	{
+		value = FilterValue("Введите значение эффективности КС (оно измеряется в процентах, поэтому введите число от 0 до 100%): ", "Ошибка!!! Вы ввели что-то непонятное.\nЭффективность КС может быть либо целым числом, либо числом с плавающей точкой, лежащим в пределах от 0 до 100.\nПовторите ввод!!!");
+		if (value >= 0. && value <= 100.)
+			return value;
+		else
+		{
+			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
+			cout << "Простите, но вы ввели число не лежащее в диапазоне от 0 до 100, повторите ввод заново!" << endl;
 			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 		}
 	}
@@ -124,13 +249,24 @@ bool FilterRepair()
 Pipe NewPipe()
 {
 	Pipe result;
-	cout << "Введите id трубы: ";
-	cin >> result.id;
-	result.length = FilterValue("Введите длину трубы (необязательно целое число): ", "Ошибка!!! Вы ввели что-то непонятное.\nДлина трубы может быть либо целым числом, либо числом с плавающей точкой, повторите ввод!!!");
-	result.diameter = FilterValue("Введите диаметр трубы (необязательно целое число): ", "Ошибка!!! Вы ввели что-то непонятное.\nДиаметр трубы может быть либо целым числом, либо числом с плавающей точкой, повторите ввод!!!");
+	result.id = FilterId("Введите id трубы: ", "Ошибка!!! Поле Id не может быть пустым.");
+	result.length = FilterValue("Введите длину трубы (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ", "Ошибка!!! Вы ввели что-то непонятное.\nДлина трубы может быть либо целым числом, либо числом с плавающей точкой, повторите ввод!!!");
+	result.diameter = FilterValue("Введите диаметр трубы (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ", "Ошибка!!! Вы ввели что-то непонятное.\nДиаметр трубы может быть либо целым числом, либо числом с плавающей точкой, повторите ввод!!!");
 	result.repair = FilterRepair();
 	return result;
 };
+
+// Создание новой компрессорной станции
+CompressorStation NewCompressorStation()
+{
+	CompressorStation result;
+	result.id = FilterId("Введите id КС: ", "Ошибка!!! Поле Id не может быть пустым.");
+	result.name = FilterNameCS("Введите название КС: ", "Ошибка!!! Название не может состоять только из пробелов или пустой строки.");
+	result.countWorkShops = FilterValue("Введите количество цехов КС: ", "Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек и т.д.", true);
+	result.countWorkShopsInOperation = FilterCountWorkShopsOperation(result);
+	result.effectiveness = FilterEffectiveness();
+	return result;
+}
 
 
 // Точка входа в программу
@@ -139,6 +275,7 @@ int main()
 	setlocale(LC_ALL, "Russian");
 	char command;
 	vector <Pipe> vectorPipes;
+	vector <CompressorStation> vectorCompressorStations;
 	size_t countPipes = 0, countCompessorStation = 0;
 	while (true)
 	{
@@ -160,6 +297,12 @@ int main()
 		}
 		case two:
 		{
+			system("CLS");
+			SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
+			cout << "\t\t\t\t\tИНИЦИАЛИЗАЦИЯ КОМПРЕССОРНОЙ СТАНЦИИ" << endl;
+			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			vectorCompressorStations.resize(++countCompessorStation);
+			vectorCompressorStations[countCompessorStation - 1] = NewCompressorStation();
 			break;
 		}
 		case three:
