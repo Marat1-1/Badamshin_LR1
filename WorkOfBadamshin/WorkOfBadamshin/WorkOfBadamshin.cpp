@@ -15,7 +15,9 @@ enum TableCommand
 	four = 52,
 	five = 53, 
 	six = 54,
-	seven = 55
+	seven = 55,
+	y =	121,
+	n = 110
 };
 
 // Консоль
@@ -34,20 +36,6 @@ void PrintMenu()
 		<< "7. Загрузить" << endl
 		<< "0. Выход" << endl
 		<< "Итак, нажмите на нужную клавишу на клавиатуре ";
-};
-
-
-// Проверка ввода числа
-bool CheckInputDigit(string number)
-{
-	if (size(number) == 0)
-		return false;
-	for (size_t i = 0; i < size(number); i++)
-	{
-		if (!isdigit(number[i]) && number[i] != '.')
-			return false;
-	}
-	return true;
 };
 
 // Структура Трубы
@@ -69,6 +57,24 @@ struct CompressorStation
 	int effectiveness;
 };
 
+// Проверка ввода числа
+bool CheckInputDigit(string number)
+{
+	int counter = 0;
+	if (size(number) == 0 || !isdigit(number[0]))
+		return false;
+	for (size_t i = 0; i < size(number); i++)
+	{
+		if (!isdigit(number[i]))
+			if (number[i] != '.')
+				return false;
+			else
+				counter++;
+	}
+	return counter <= 1 ? true : false;
+};
+
+
 // Фильтр на ввод значений типа double длины, диаметра
 double FilterValue(string textRequest, string textError)
 {
@@ -89,26 +95,27 @@ double FilterValue(string textRequest, string textError)
 	}
 };
 
-//Фильтр на ввод значения "В ремонте" для труб
+// Фильтр на ввод значения "В ремонте" для труб
 bool FilterRepair()
 {
-	string strRepair;
-	cout << "Укажите находится ли труба в ремонте, если да, то введите \"y\", если же труба не в ремонте, введите \"n\": ";
+	char stateRepair;
+	cout << "Укажите находится ли труба в ремонте, если да, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ";
 	while (true)
 	{
-		cin.seekg(cin.eof());
-		getline(cin, strRepair);
-		if (strRepair == "y")
+		stateRepair = _getch();
+		if (stateRepair == y)
 		{
 			return true;
 		}
-		else if (strRepair == "n")
+		else if (stateRepair == n)
 		{
 			return false;
 		}
 		else
 		{
-			cout << "Вы ввели что-то непонятное, повторите ввод по указанным выше правилам, \"y\" - это да, \"n\" - это нет: ";
+			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
+			cout << "\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ";
+			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 		}
 	}
 };
@@ -125,6 +132,8 @@ Pipe NewPipe()
 	return result;
 };
 
+
+// Точка входа в программу
 int main()
 {
 	setlocale(LC_ALL, "Russian");
@@ -183,8 +192,8 @@ int main()
 		}
 		default:
 			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
-			cout << "\nНекорректный ввод данных!!! Осуществите ввод заново!!!" << endl
-				<< "Сообщение пропадёт через 5 секунд" << endl;
+			cout << "\nНекорректный ввод данных!!! Нажмите на число, которое соотвествует команде из списка!!!" << endl
+				<< "Сообщение пропадёт через 3 секунды" << endl;
 			Sleep(3000);
 			break;
 		}
