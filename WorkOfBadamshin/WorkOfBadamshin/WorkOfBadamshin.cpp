@@ -62,7 +62,7 @@ struct CompressorStation
 bool CheckInputDigit(string number)
 {
 	int counter = 0;
-	if (size(number) == 0 || !isdigit(number[0]))
+	if (size(number) == 0)
 		return false;
 	for (size_t i = 0; i < size(number); i++)
 	{
@@ -72,7 +72,7 @@ bool CheckInputDigit(string number)
 			else
 				counter++;
 	}
-	return counter <= 1 ? true : false;
+	return counter <= 1;
 };
 
 // Проверка ввода числа int
@@ -86,8 +86,9 @@ bool CheckInputDigit(string number, bool thisInt)
 			return false;
 	}
 	return true;
-}
+};
 
+// Переписать код
 // Проверка, не состоит ли строка только из пробелов
 bool CheckCountSpace(string str)
 {
@@ -102,7 +103,16 @@ bool CheckCountSpace(string str)
 	return true;
 };
 
+// Вывод ошибки с установкой другого цвета текста
+void PrintErrorText(string textError)
+{
+	SetConsoleTextAttribute(myHandle, FOREGROUND_RED | FOREGROUND_GREEN);
+	cout << textError << endl;
+	SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+};
 
+
+// Убрать
 // Фильтр на ввод id для Трубы и КС
 string FilterId(string textRequest, string textError)
 {
@@ -116,9 +126,7 @@ string FilterId(string textRequest, string textError)
 			return resultId;
 		else
 		{
-			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
-			cout << textError << endl;
-			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			PrintErrorText(textError);
 		}
 	}
 };
@@ -136,9 +144,7 @@ string FilterNameCS(string textRequest, string textError)
 			return nameCS;
 		else
 		{
-			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
-			cout << textError << endl;
-			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			PrintErrorText(textError);
 		}
 	}
 };
@@ -157,9 +163,7 @@ double FilterValue(string textRequest, string textError)
 			return stod(value);
 		else
 		{
-			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
-			cout << textError << endl;
-			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			PrintErrorText(textError);
 		}
 	}
 };
@@ -177,9 +181,7 @@ int FilterValue(string textRequest, string textError, bool thisInt)
 			return stoi(value);
 		else
 		{
-			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
-			cout << textError << endl;
-			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			PrintErrorText(textError);
 		}
 	}
 };
@@ -195,9 +197,7 @@ int FilterCountWorkShopsOperation(CompressorStation& cs)
 			return value;
 		else
 		{
-			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
-			cout << "Простите, но количество цехов в работе не может превышать общее количество цехов, осуществите ввод по новой!" << endl;
-			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			PrintErrorText("Простите, но количество цехов в работе не может превышать общее количество цехов, осуществите ввод по новой!");
 		}
 	}
 };
@@ -213,9 +213,7 @@ double FilterEffectiveness()
 			return value;
 		else
 		{
-			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
-			cout << "Простите, но вы ввели число не лежащее в диапазоне от 0 до 100, повторите ввод заново!" << endl;
-			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			PrintErrorText("Простите, но вы ввели число не лежащее в диапазоне от 0 до 100, повторите ввод заново!");
 		}
 	}
 };
@@ -238,9 +236,7 @@ bool FilterRepair()
 		}
 		else
 		{
-			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
-			cout << "\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ";
-			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			PrintErrorText("\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ");
 		}
 	}
 };
@@ -276,11 +272,8 @@ int main()
 	char command;
 	vector <Pipe> vectorPipes;
 	vector <CompressorStation> vectorCompressorStations;
-	size_t countPipes = 0, countCompessorStation = 0;
 	while (true)
 	{
-		system("CLS");
-		SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 		PrintMenu();
 		command = _getch();
 		switch (command)
@@ -291,8 +284,7 @@ int main()
 			SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
 			cout << "\t\t\t\t\t\tИНИЦИАЛИЗАЦИЯ ТРУБЫ" << endl;
 			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
-			vectorPipes.resize(++countPipes);
-			vectorPipes[countPipes - 1] = NewPipe();
+			vectorPipes.push_back(NewPipe());
 			break;
 		}
 		case two:
@@ -301,8 +293,7 @@ int main()
 			SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
 			cout << "\t\t\t\t\tИНИЦИАЛИЗАЦИЯ КОМПРЕССОРНОЙ СТАНЦИИ" << endl;
 			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
-			vectorCompressorStations.resize(++countCompessorStation);
-			vectorCompressorStations[countCompessorStation - 1] = NewCompressorStation();
+			vectorCompressorStations.push_back(NewCompressorStation());
 			break;
 		}
 		case three:
@@ -327,18 +318,17 @@ int main()
 		}
 		case zero:
 		{
-			system("cls");
+			system("CLS");
 			SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
 			cout << "Итак, вы нажали на выход, на этом программа завершила свой сеанс работы.\nДо скорой встречи! :)" << endl;
 			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 			return 0;
 		}
 		default:
-			SetConsoleTextAttribute(myHandle, FOREGROUND_RED);
-			cout << "\nНекорректный ввод данных!!! Нажмите на число, которое соотвествует команде из списка!!!" << endl
-				<< "Сообщение пропадёт через 3 секунды" << endl;
+			PrintErrorText("\nНекорректный ввод данных!!! Нажмите на число, которое соотвествует команде из списка!!!\nСообщение пропадёт через 3 секунды");
 			Sleep(3000);
 			break;
 		}
+		system("CLS");
 	}
 };
