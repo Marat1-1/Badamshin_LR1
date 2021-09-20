@@ -42,7 +42,7 @@ void PrintMenu()
 // Структура Трубы
 struct Pipe
 {
-	string id;
+	int id;
 	double length;
 	double diameter;
 	bool repair;
@@ -51,7 +51,7 @@ struct Pipe
 // Структура КС
 struct CompressorStation
 {
-	string id;
+	int id;
 	string name;
 	int countWorkShops;
 	int countWorkShopsInOperation;
@@ -62,7 +62,7 @@ struct CompressorStation
 bool CheckInputDigit(string number)
 {
 	int counter = 0;
-	if (size(number) == 0)
+	if (size(number) == 0 || !isdigit(number[0]))
 		return false;
 	for (size_t i = 0; i < size(number); i++)
 	{
@@ -88,19 +88,18 @@ bool CheckInputDigit(string number, bool thisInt)
 	return true;
 };
 
-// Переписать код
+
 // Проверка, не состоит ли строка только из пробелов
 bool CheckCountSpace(string str)
 {
-	int counter = 0;
-	for (size_t i = 0; i < size(str); i++)
+	int i = 0;
+	while (i != size(str))
 	{
-		if (str[i] == ' ')
-			++counter;
+		if (str[i] != ' ')
+			return true;
+		++i;
 	}
-	if (counter == size(str))
-		return false;
-	return true;
+	return false;
 };
 
 // Вывод ошибки с установкой другого цвета текста
@@ -112,27 +111,8 @@ void PrintErrorText(string textError)
 };
 
 
-// Убрать
-// Фильтр на ввод id для Трубы и КС
-string FilterId(string textRequest, string textError)
-{
-	string resultId;
-	while (true)
-	{
-		cout << textRequest;
-		cin.seekg(cin.eof());
-		getline(cin, resultId);
-		if (resultId != "" && CheckCountSpace(resultId))
-			return resultId;
-		else
-		{
-			PrintErrorText(textError);
-		}
-	}
-};
-
-// Фильтр на ввод названия КС
-string FilterNameCS(string textRequest, string textError)
+// Запрос на ввод названия КС
+string GetNameCS(string textRequest, string textError)
 {
 	string nameCS;
 	while (true)
@@ -150,8 +130,8 @@ string FilterNameCS(string textRequest, string textError)
 };
 
 
-// Фильтр на ввод значений типа double длины, диаметра
-double FilterValue(string textRequest, string textError)
+// Запрос на ввод значений типа double в диапозоне от 0 до maxValue
+double GetValue(string textRequest, string textError, double minValue, double maxValue)
 {
 	string value;
 	while (true)
@@ -159,7 +139,7 @@ double FilterValue(string textRequest, string textError)
 		cout << textRequest;
 		cin.seekg(cin.eof());
 		getline(cin, value);
-		if (CheckInputDigit(value))
+		if (CheckInputDigit(value) && (stod(value) >= minValue && stod(value) <= maxValue))
 			return stod(value);
 		else
 		{
@@ -168,8 +148,8 @@ double FilterValue(string textRequest, string textError)
 	}
 };
 
-// Фильтр на ввод типа int количества цехов КС
-int FilterValue(string textRequest, string textError, bool thisInt)
+// Запрос на ввод типа int
+int GetValue(string textRequest, string textError, bool thisInt)
 {
 	string value;
 	while (true)
@@ -186,13 +166,14 @@ int FilterValue(string textRequest, string textError, bool thisInt)
 	}
 };
 
-// Фильтр на ввод количества цехов КС
-int FilterCountWorkShopsOperation(CompressorStation& cs)
+
+// Запрос на ввод количества цехов КС
+int GetCountWorkShopsOperation(CompressorStation& cs)
 {
 	int value;
 	while (true)
 	{
-		value = FilterValue("Введите количество цехов в работе: ", "Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек и т.д.", true);
+		value = GetValue("Введите количество цехов в работе (оно не должно превышать общее количество цехов): ", "Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек и т.д.", true);
 		if (value <= cs.countWorkShops)
 			return value;
 		else
@@ -202,24 +183,9 @@ int FilterCountWorkShopsOperation(CompressorStation& cs)
 	}
 };
 
-// Фильтр на ввод значения эффективности для КС
-double FilterEffectiveness()
-{
-	double value;
-	while (true)
-	{
-		value = FilterValue("Введите значение эффективности КС (оно измеряется в процентах, поэтому введите число от 0 до 100%): ", "Ошибка!!! Вы ввели что-то непонятное.\nЭффективность КС может быть либо целым числом, либо числом с плавающей точкой, лежащим в пределах от 0 до 100.\nПовторите ввод!!!");
-		if (value >= 0. && value <= 100.)
-			return value;
-		else
-		{
-			PrintErrorText("Простите, но вы ввели число не лежащее в диапазоне от 0 до 100, повторите ввод заново!");
-		}
-	}
-};
 
-// Фильтр на ввод значения "В ремонте" для труб
-bool FilterRepair()
+// Запрос на ввод значения "В ремонте" для труб
+bool GetRepair()
 {
 	char stateRepair;
 	cout << "Укажите находится ли труба в ремонте, если да, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ";
@@ -242,25 +208,30 @@ bool FilterRepair()
 };
 
 // Создание новой трубы
-Pipe NewPipe()
+Pipe CreatePipe(int id)
 {
 	Pipe result;
-	result.id = FilterId("Введите id трубы: ", "Ошибка!!! Поле Id не может быть пустым.");
-	result.length = FilterValue("Введите длину трубы (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ", "Ошибка!!! Вы ввели что-то непонятное.\nДлина трубы может быть либо целым числом, либо числом с плавающей точкой, повторите ввод!!!");
-	result.diameter = FilterValue("Введите диаметр трубы (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ", "Ошибка!!! Вы ввели что-то непонятное.\nДиаметр трубы может быть либо целым числом, либо числом с плавающей точкой, повторите ввод!!!");
-	result.repair = FilterRepair();
+	result.id = id;
+	result.length = GetValue("Введите длину трубы, размерность - километры (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ", 
+		"Ошибка!!! Вы ввели что-то непонятное.\nДлина трубы может быть либо целым числом, либо числом с плавающей точкой, лежащим в диапазоне от 10 до 100 км, повторите ввод!!!", 10, 100);
+	result.diameter = GetValue("Введите диаметр трубы, размерность миллиметры (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ", 
+		"Ошибка!!! Вы ввели что-то непонятное.\nДиаметр трубы может быть либо целым числом, либо числом с плавающей точкой, повторите ввод!!!", 0, 200);
+	result.repair = GetRepair();
 	return result;
 };
 
 // Создание новой компрессорной станции
-CompressorStation NewCompressorStation()
+CompressorStation CreateCompressorStation(int id)
 {
 	CompressorStation result;
-	result.id = FilterId("Введите id КС: ", "Ошибка!!! Поле Id не может быть пустым.");
-	result.name = FilterNameCS("Введите название КС: ", "Ошибка!!! Название не может состоять только из пробелов или пустой строки.");
-	result.countWorkShops = FilterValue("Введите количество цехов КС: ", "Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек и т.д.", true);
-	result.countWorkShopsInOperation = FilterCountWorkShopsOperation(result);
-	result.effectiveness = FilterEffectiveness();
+	result.id = id;
+	result.name = GetNameCS("Введите название КС: ", 
+		"Ошибка!!! Название не может состоять только из пробелов или пустой строки.");
+	result.countWorkShops = GetValue("Введите количество цехов КС: ", 
+		"Ошибка!!! Количество цехов это целое число, без посторонних символов, в виде букв, точек и т.д.", true);
+	result.countWorkShopsInOperation = GetCountWorkShopsOperation(result);
+	result.effectiveness = GetValue("Введите значение эффективности КС (оно измеряется в процентах, поэтому введите число от 0 до 100%): ", 
+		"Ошибка!!! Вы ввели что-то непонятное.\nЭффективность КС может быть либо целым числом, либо числом с плавающей точкой, лежащим в пределах от 0 до 100.\nПовторите ввод!!!", 0, 100);
 	return result;
 }
 
@@ -284,7 +255,8 @@ int main()
 			SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
 			cout << "\t\t\t\t\t\tИНИЦИАЛИЗАЦИЯ ТРУБЫ" << endl;
 			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
-			vectorPipes.push_back(NewPipe());
+			Pipe NewPipe = CreatePipe(size(vectorPipes) + 1);
+			vectorPipes.push_back(NewPipe);
 			break;
 		}
 		case two:
@@ -293,7 +265,8 @@ int main()
 			SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
 			cout << "\t\t\t\t\tИНИЦИАЛИЗАЦИЯ КОМПРЕССОРНОЙ СТАНЦИИ" << endl;
 			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
-			vectorCompressorStations.push_back(NewCompressorStation());
+			CompressorStation NewComressorStation = CreateCompressorStation(size(vectorCompressorStations) + 1);
+			vectorCompressorStations.push_back(NewComressorStation);
 			break;
 		}
 		case three:
