@@ -4,6 +4,7 @@
 #include <conio.h>
 #include <Windows.h>
 #include <ctime>
+#include <iomanip>
 
 using namespace std;
 
@@ -18,7 +19,8 @@ enum TableCommand
 	six = 54,
 	seven = 55,
 	y =	121,
-	n = 110
+	n = 110,
+	esc = 27
 };
 
 // Консоль
@@ -102,7 +104,7 @@ bool CheckCountSpace(string str)
 	return false;
 };
 
-// Вывод ошибки с установкой другого цвета текста
+// Вывод ошибки с установкой жёлтого цвета текста
 void PrintErrorText(string textError)
 {
 	SetConsoleTextAttribute(myHandle, FOREGROUND_RED | FOREGROUND_GREEN);
@@ -110,6 +112,13 @@ void PrintErrorText(string textError)
 	SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 };
 
+// Вывод заголовков с установкой зелёного цвета
+void PrintTitle(string textTitle)
+{
+	SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
+	cout << textTitle << endl;
+	SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+};
 
 // Запрос на ввод названия КС
 string GetNameCS(string textRequest, string textError)
@@ -120,7 +129,7 @@ string GetNameCS(string textRequest, string textError)
 		cout << textRequest;
 		cin.seekg(cin.eof());
 		getline(cin, nameCS);
-		if (nameCS != "" && CheckCountSpace(nameCS))
+		if (nameCS != "" && CheckCountSpace(nameCS) && size(nameCS) <= 30)
 			return nameCS;
 		else
 		{
@@ -157,7 +166,7 @@ int GetValue(string textRequest, string textError, bool thisInt)
 		cout << textRequest;
 		cin.seekg(cin.eof());
 		getline(cin, value);
-		if (CheckInputDigit(value, true))
+		if (CheckInputDigit(value, true) && stoi(value) <= 500)
 			return stoi(value);
 		else
 		{
@@ -184,11 +193,11 @@ int GetCountWorkShopsOperation(CompressorStation& cs)
 };
 
 
-// Запрос на ввод значения "В ремонте" для труб
-bool GetRepair()
+// Запрос на ввод значения: "ИСТИНА" или "ЛОЖЬ" (значение поля ремонт трубы)
+bool GetRepair(string textRequest, string textError)
 {
 	char stateRepair;
-	cout << "Укажите находится ли труба в ремонте, если да, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ";
+	cout << textRequest;
 	while (true)
 	{
 		stateRepair = _getch();
@@ -202,8 +211,22 @@ bool GetRepair()
 		}
 		else
 		{
-			PrintErrorText("\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ");
+			PrintErrorText(textError);
 		}
+	}
+};
+
+void CheckPressEscape(string textRequest, string textError)
+{
+	cout << textRequest;
+	while (true)
+	{
+		char escCommand;
+		escCommand = _getch();
+		if (escCommand == esc)
+			break;
+		else
+			PrintErrorText(textError);
 	}
 };
 
@@ -212,11 +235,12 @@ Pipe CreatePipe(int id)
 {
 	Pipe result;
 	result.id = id;
-	result.length = GetValue("Введите длину трубы, размерность - километры (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ", 
+	result.length = GetValue("Введите длину трубы, размерность - километры, диапазон от 10 до 100 км (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ", 
 		"Ошибка!!! Вы ввели что-то непонятное.\nДлина трубы может быть либо целым числом, либо числом с плавающей точкой, лежащим в диапазоне от 10 до 100 км, повторите ввод!!!", 10, 100);
-	result.diameter = GetValue("Введите диаметр трубы, размерность миллиметры (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ", 
-		"Ошибка!!! Вы ввели что-то непонятное.\nДиаметр трубы может быть либо целым числом, либо числом с плавающей точкой, повторите ввод!!!", 0, 200);
-	result.repair = GetRepair();
+	result.diameter = GetValue("Введите диаметр трубы, размерность миллиметры, диапазон от 40 до 200 мм (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ", 
+		"Ошибка!!! Вы ввели что-то непонятное.\nДиаметр трубы может быть либо целым числом, либо числом с плавающей точкой, лежащим в диапазоне от 40 до 200 мм, повторите ввод!!!", 40, 200);
+	result.repair = GetRepair("Укажите находится ли труба в ремонте, если да, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
+		"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ");
 	return result;
 };
 
@@ -225,16 +249,65 @@ CompressorStation CreateCompressorStation(int id)
 {
 	CompressorStation result;
 	result.id = id;
-	result.name = GetNameCS("Введите название КС: ", 
-		"Ошибка!!! Название не может состоять только из пробелов или пустой строки.");
-	result.countWorkShops = GetValue("Введите количество цехов КС: ", 
-		"Ошибка!!! Количество цехов это целое число, без посторонних символов, в виде букв, точек и т.д.", true);
+	result.name = GetNameCS("Введите название КС (длина не больше 30 символов): ",
+		"Ошибка!!! Название не может состоять только из пробелов или пустой строки и иметь длину больше чем 40 символов.");
+	result.countWorkShops = GetValue("Введите количество цехов КС (не больше 500): ",
+		"Ошибка!!! Количество цехов это целое число, без посторонних символов, в виде букв, точек и также число должно быть меньше 500.", true);
 	result.countWorkShopsInOperation = GetCountWorkShopsOperation(result);
-	result.effectiveness = GetValue("Введите значение эффективности КС (оно измеряется в процентах, поэтому введите число от 0 до 100%): ", 
+	result.effectiveness = GetValue("Введите значение эффективности КС (оно измеряется в процентах, поэтому введите число от 0 до 100%): ",
 		"Ошибка!!! Вы ввели что-то непонятное.\nЭффективность КС может быть либо целым числом, либо числом с плавающей точкой, лежащим в пределах от 0 до 100.\nПовторите ввод!!!", 0, 100);
 	return result;
-}
+};
 
+
+// Вывод таблицы труб
+void PrintTablePipes(vector <Pipe>& vectorPipes)
+{
+	for (size_t i = 0; i < 131; i++)
+	{
+		cout << "-";
+	}
+	cout << endl;
+	cout << "|" << setw(20) << "ID" << setw(30) << "LENGTH" << setw(30) << "DIAMETER" << setw(30) << "REPAIR" << setw(20) << "|" << endl;
+	for (size_t i = 0; i < 131; i++)
+	{
+		cout << "-";
+	}
+	cout << endl;
+	for (size_t i = 0; i < vectorPipes.size(); i++)
+	{
+		cout << "|" << setw(20) << vectorPipes[i].id << setw(30) << vectorPipes[i].length << setw(30) << vectorPipes[i].diameter << setw(30) << (vectorPipes[i].repair == true ? "true" : "false") << setw(20) << "|" << endl;
+	}
+	for (size_t i = 0; i < 131; i++)
+	{
+		cout << "-";
+	}
+};
+
+
+// Вывод таблицы Компрессорных станций
+void PrintTableCS(vector <CompressorStation>& vectorCompressorStations)
+{
+	for (size_t i = 0; i < 172; i++)
+	{
+		cout << "-";
+	}
+	cout << endl;
+	cout << "|" << setw(20) << "ID" << setw(31) << "NAME" << setw(30) << "CountWorkShops" << setw(40) << "CountWorkShopsInOperation" << setw(30) << "EFFECTIVENESS" << setw(20) << "|" << endl;
+	for (size_t i = 0; i < 172; i++)
+	{
+		cout << "-";
+	}
+	cout << endl;
+	for (size_t i = 0; i < vectorCompressorStations.size(); i++)
+	{
+		cout << "|" << setw(20) << vectorCompressorStations[i].id << setw(31) << vectorCompressorStations[i].name << setw(30) << vectorCompressorStations[i].countWorkShops << setw(40) << vectorCompressorStations[i].countWorkShopsInOperation << setw(30) << vectorCompressorStations[i].effectiveness << setw(20) << "|" << endl;
+	}
+	for (size_t i = 0; i < 172; i++)
+	{
+		cout << "-";
+	}
+};
 
 // Точка входа в программу
 int main()
@@ -252,9 +325,7 @@ int main()
 		case one:
 		{
 			system("CLS");
-			SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
-			cout << "\t\t\t\t\t\tИНИЦИАЛИЗАЦИЯ ТРУБЫ" << endl;
-			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			PrintTitle("\t\t\t\t\t\tИНИЦИАЛИЗАЦИЯ ТРУБЫ");
 			Pipe NewPipe = CreatePipe(size(vectorPipes) + 1);
 			vectorPipes.push_back(NewPipe);
 			break;
@@ -262,15 +333,19 @@ int main()
 		case two:
 		{
 			system("CLS");
-			SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
-			cout << "\t\t\t\t\tИНИЦИАЛИЗАЦИЯ КОМПРЕССОРНОЙ СТАНЦИИ" << endl;
-			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			PrintTitle("\t\t\t\t\tИНИЦИАЛИЗАЦИЯ КОМПРЕССОРНОЙ СТАНЦИИ");
 			CompressorStation NewComressorStation = CreateCompressorStation(size(vectorCompressorStations) + 1);
 			vectorCompressorStations.push_back(NewComressorStation);
 			break;
 		}
 		case three:
 		{
+			system("ClS");
+			PrintTitle("\n\t\t\t\t\t\t\tТАБЛИЦА ТРУБ\n");
+			PrintTablePipes(vectorPipes);
+			PrintTitle("\n\n\n\n\t\t\t\t\t\t\t\tТАБЛИЦА КОМПРЕССОРНЫХ СТАНЦИЙ\n");
+			PrintTableCS(vectorCompressorStations);
+			CheckPressEscape("\n\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню: ");
 			break;
 		}
 		case four:
@@ -292,9 +367,7 @@ int main()
 		case zero:
 		{
 			system("CLS");
-			SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
-			cout << "Итак, вы нажали на выход, на этом программа завершила свой сеанс работы.\nДо скорой встречи! :)" << endl;
-			SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+			PrintTitle("\n\tИтак, вы нажали на выход, на этом программа завершила свой сеанс работы.\n\t\t\t\tДо скорой встречи! :)");
 			return 0;
 		}
 		default:
