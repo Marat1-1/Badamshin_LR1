@@ -148,8 +148,20 @@ double GetValue(string textRequest, string textError, double minValue, double ma
 		cout << textRequest;
 		cin.seekg(cin.eof());
 		getline(cin, value);
-		if (CheckInputDigit(value) && (stod(value) >= minValue && stod(value) <= maxValue))
-			return stod(value);
+		if (CheckInputDigit(value))
+		{
+			try
+			{
+				if ((stod(value) >= minValue && stod(value) <= maxValue))
+					return stod(value);
+				else
+					PrintErrorText(textError);
+			}
+			catch (exception)
+			{
+				PrintErrorText(textError);
+			}
+		}
 		else
 		{
 			PrintErrorText(textError);
@@ -166,8 +178,20 @@ int GetValue(string textRequest, string textError, bool thisInt)
 		cout << textRequest;
 		cin.seekg(cin.eof());
 		getline(cin, value);
-		if (CheckInputDigit(value, true) && stoi(value) <= 500)
-			return stoi(value);
+		if (CheckInputDigit(value, true))
+		{
+			try
+			{
+				if (stoi(value) <= 500)
+					return stoi(value);
+				else
+					PrintErrorText(textError);
+			}
+			catch (exception)
+			{
+				PrintErrorText(textError);
+			}
+		}
 		else
 		{
 			PrintErrorText(textError);
