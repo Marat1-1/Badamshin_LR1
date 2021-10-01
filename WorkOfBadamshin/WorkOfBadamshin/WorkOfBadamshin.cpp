@@ -60,6 +60,22 @@ struct CompressorStation
 	double effectiveness;
 };
 
+// Вывод ошибки с установкой жёлтого цвета текста
+void PrintErrorText(string textError)
+{
+	SetConsoleTextAttribute(myHandle, FOREGROUND_RED | FOREGROUND_GREEN);
+	cout << textError << endl;
+	SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+};
+
+// Вывод заголовков с установкой зелёного цвета
+void PrintTitle(string textTitle)
+{
+	SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
+	cout << textTitle << endl;
+	SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+};
+
 // Проверка ввода числа double
 bool CheckInputDigit(string number)
 {
@@ -102,22 +118,6 @@ bool CheckCountSpace(string str)
 		++i;
 	}
 	return false;
-};
-
-// Вывод ошибки с установкой жёлтого цвета текста
-void PrintErrorText(string textError)
-{
-	SetConsoleTextAttribute(myHandle, FOREGROUND_RED | FOREGROUND_GREEN);
-	cout << textError << endl;
-	SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
-};
-
-// Вывод заголовков с установкой зелёного цвета
-void PrintTitle(string textTitle)
-{
-	SetConsoleTextAttribute(myHandle, FOREGROUND_GREEN);
-	cout << textTitle << endl;
-	SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 };
 
 // Запрос на ввод названия КС
@@ -200,7 +200,7 @@ int GetValue(string textRequest, string textError, int minValue, int maxValue, b
 };
 
 
-// Запрос на ввод значения: "ИСТИНА" или "ЛОЖЬ" (значение поля ремонт трубы)
+// Запрос на ввод значений: "ИСТИНА" или "ЛОЖЬ"
 bool GetRepair(string textRequest, string textError)
 {
 	char stateRepair;
@@ -226,9 +226,9 @@ bool GetRepair(string textRequest, string textError)
 // Прроверка на нажатие esc
 void CheckPressEscape(string textRequest, string textError)
 {
-	cout << textRequest;
 	while (true)
 	{
+		cout << textRequest;
 		char escCommand;
 		escCommand = _getch();
 		if (escCommand == esc)
@@ -313,33 +313,61 @@ void ChangePipe(vector <Pipe>& vectorPipes)
 {
 	size_t localId;
 	bool query;
+	cout << "Всего добавлено труб: " << size(vectorPipes) << endl;
 	if (size(vectorPipes) == 0)
 	{
 		PrintErrorText("Вы не добавили ни одной трубы, редактирование недоступно!");
-		CheckPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню: ");
+		CheckPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
 		return;
 	}
 	while (true)
 	{
-		localId = GetValue("\nВведите номер (id) трубы, которую вы бы хотели редактировать (id не должен превышать количество труб): ",
+		localId = GetValue("\nВведите номер (id) трубы, которую вы бы хотели редактировать (id не должен превышать общее количество труб): ",
 			"Вы ввели недопустимое значение, id трубы не должен превышать общее количество труб, а также он является натуральным числом!!!", 1, size(vectorPipes));
-		vectorPipes[localId - 1].repair = GetRepair("Укажите находится ли труба в ремонте, если да, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
+		cout << "Изначальное состояние трубы: " << (vectorPipes[localId - 1].repair == true ? "в ремонте" : "не в ремонте") << endl;
+		vectorPipes[localId - 1].repair = GetRepair("Укажите новое состояние для трубы, если она в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
 			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ");
-		query = GetRepair("\n\nХотите ли вы продолжить редактировать трубы, если да, то кликните \"y\", если же нет, то нажмите на \"n\"",
+		query = GetRepair("\n\nХотите ли вы продолжить редактировать трубы, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
 			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ");
 		if (query != true)
 			break;
 	}
 };
 
-// Точка входа в программу
-int main()
+
+// Редактирование Компрессорных станций
+void ChangeCS(vector <CompressorStation>& vectorCompressorStations)
 {
-	setlocale(LC_ALL, "Russian");
-	SetConsoleTitle(L"Лабораторная работа №1, Бадамшин Марат Ринатович, АА-20-05");
-	char command;
-	vector <Pipe> vectorPipes;
-	vector <CompressorStation> vectorCompressorStations;
+	size_t localId;
+	bool query;
+	cout << "Всего добавлено компрессорных станций: " << size(vectorCompressorStations) << endl;
+	if (size(vectorCompressorStations) == 0)
+	{
+		PrintErrorText("Вы не добавили ни одной компрессорной станции, редактирование недоступно!");
+		CheckPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
+		return;
+	}
+	while (true)
+	{
+		localId = GetValue("\nВведите номер (id) компрессорной станции, которую вы бы хотели редактировать (id не должен превышать общее количество компрессорных станций): ",
+			"Вы ввели недопустимое значение, id трубы не должен превышать общее количество компрессорных станций, а также он является натуральным числом!!!", 
+			1, size(vectorCompressorStations));
+		cout << "Количество цехов у данной компрессорной станции: " << vectorCompressorStations[localId - 1].countWorkShops << endl;
+		cout << "Количество цехов в работе у данной компрессорной станции: " << vectorCompressorStations[localId - 1].countWorkShopsInOperation << endl;
+		vectorCompressorStations[localId - 1].countWorkShopsInOperation = GetValue("Введите новое количество цехов в работе (оно не должно превышать общее количество цехов): ",
+			"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 
+			0, vectorCompressorStations[localId - 1].countWorkShops, true);
+		query = GetRepair("\n\nХотите ли вы продолжить редактировать компрессоные станции, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
+			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ");
+		if (query != true)
+			break;
+	}
+};
+
+
+// Установка шрифта в консоли
+void ChangeConsoleFont()
+{
 	CONSOLE_FONT_INFOEX cfi;
 	cfi.cbSize = sizeof(cfi);
 	cfi.nFont = 0;
@@ -347,6 +375,18 @@ int main()
 	cfi.dwFontSize.Y = 20;
 	cfi.FontWeight = FW_REGULAR;
 	SetCurrentConsoleFontEx(myHandle, FALSE, &cfi);
+};
+
+
+// Точка входа в программу
+int main()
+{
+	setlocale(LC_ALL, "Russian");
+	SetConsoleTitle(L"Лабораторная работа №1, Бадамшин Марат Ринатович, АА-20-05");
+	ChangeConsoleFont();
+	char command;
+	vector <Pipe> vectorPipes;
+	vector <CompressorStation> vectorCompressorStations;
 	while (true)
 	{
 		PrintMenu();
@@ -376,19 +416,21 @@ int main()
 			PrintTablePipes(vectorPipes);
 			PrintTitle("\n\n\n\n\t\t\t\t\t\t\t\tТАБЛИЦА КОМПРЕССОРНЫХ СТАНЦИЙ\n");
 			PrintTableCS(vectorCompressorStations);
-			CheckPressEscape("\n\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню: ");
+			CheckPressEscape("\n\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
 			break;
 		}
 		case four:
 		{
 			system("CLS");
-			PrintTitle("\n\t\t\t\t\tРЕДАКТИРОВАНИЕ ТРУБЫ\n");
-			cout << "Всего добавлено труб: " << size(vectorPipes) << endl;
+			PrintTitle("\n\t\t\t\t\tРЕДАКТИРОВАНИЕ ТРУБ\n");
 			ChangePipe(vectorPipes);
 			break;
 		}
 		case five:
 		{
+			system("CLS");
+			PrintTitle("\n\t\t\t\t\tРЕДАКТИРОВАНИЕ КОМПРЕССОРНЫХ СТАНЦИЙ\n");
+			ChangeCS(vectorCompressorStations);
 			break;
 		}
 		case six:
