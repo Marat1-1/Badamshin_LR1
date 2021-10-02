@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <ctime>
 #include <iomanip>
+#include <fstream>
 
 using namespace std;
 
@@ -365,6 +366,97 @@ void ChangeCS(vector <CompressorStation>& vectorCompressorStations)
 };
 
 
+// Сохранение данных в файл
+void SaveData(vector <Pipe>& vectorPipes, vector <CompressorStation>& vectorCompressorStations)
+{
+	ofstream fout;
+	fout.open("data.txt");
+	size_t percent = 0;
+	if (fout.is_open())
+	{
+		for (size_t i = 0; i < size(vectorPipes); i++)
+		{
+			fout << vectorPipes[i].length << endl
+				<< vectorPipes[i].diameter << endl
+				<< vectorPipes[i].repair << endl;
+		}
+		fout << ' ' << endl;
+		for (size_t i = 0; i < size(vectorCompressorStations); i++)
+		{
+			fout << vectorCompressorStations[i].name << endl
+				<< vectorCompressorStations[i].countWorkShops << endl
+				<< vectorCompressorStations[i].countWorkShopsInOperation << endl
+				<< vectorCompressorStations[i].effectiveness << endl;
+		}
+		while (percent <= 100)
+		{
+			cout << "\t\t\t\t\t\t" << "     Прогресс: " << percent++ << "%";
+			cout << '\r';
+			Sleep(20);
+		}
+	}
+	else
+	{
+		PrintErrorText("ОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
+		Sleep(3000);
+	}
+	fout.close();
+};
+
+
+// Загрузка данных из файла
+void UploadData(vector <Pipe>& vectorPipes, vector <CompressorStation>& vectorCompressorStations)
+{
+	ifstream fin;
+	fin.open("data.txt");
+	size_t percent = 0;
+	if (fin.is_open())
+	{
+		if (fin.peek() != -1)
+		{
+			while (fin.peek() != ' ')
+			{
+				Pipe newPipe;
+				newPipe.id = size(vectorPipes);
+				fin >> newPipe.length;
+				fin >> newPipe.diameter;
+				fin >> newPipe.repair;
+				vectorPipes.push_back(newPipe);
+				fin.ignore(1000, '\n');
+			}
+			fin.ignore(1000, '\n');
+			while (fin.peek() != -1)
+			{
+				CompressorStation newCompressorStation;
+				newCompressorStation.id = size(vectorCompressorStations);
+				getline(fin, newCompressorStation.name);
+				fin >> newCompressorStation.countWorkShops;
+				fin >> newCompressorStation.countWorkShopsInOperation;
+				fin >> newCompressorStation.effectiveness;
+				vectorCompressorStations.push_back(newCompressorStation);
+				fin.ignore(1000, '\n');
+			}
+			while (percent <= 100)
+			{
+				cout << "\t\t\t\t\t\t" << "     Прогресс: " << percent++ << "%";
+				cout << '\r';
+				Sleep(20);
+			}
+		}
+		else
+		{
+			PrintErrorText("\nНельзя загружать данные из пустого файла, сначала нужно сохранить там данные!!!");
+			Sleep(3000);
+		}
+	}
+	else
+	{
+		PrintErrorText("ОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
+		Sleep(3000);
+	}
+	fin.close();
+};
+
 // Установка шрифта в консоли
 void ChangeConsoleFont()
 {
@@ -435,16 +527,23 @@ int main()
 		}
 		case six:
 		{
+			system("CLS");
+			PrintTitle("\n\t\t\t\t\t\tСОХРАНЕНИЕ ДАННЫХ В ФАЙЛ\n");
+			SaveData(vectorPipes, vectorCompressorStations);
 			break;
 		}
 		case seven:
 		{
+			system("CLS");
+			PrintTitle("\n\t\t\t\t\t\tЗАГРУЗКА ДАННЫХ ИЗ ФАЙЛА\n");
+			UploadData(vectorPipes, vectorCompressorStations);
 			break;
 		}
 		case zero:
 		{
 			system("CLS");
 			PrintTitle("\n\tИтак, вы нажали на выход, на этом программа завершила свой сеанс работы.\n\t\t\t\tДо скорой встречи! :)");
+			Sleep(5000);
 			return 0;
 		}
 		default:
