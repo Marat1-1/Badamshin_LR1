@@ -153,8 +153,9 @@ double GetValue(string textRequest, string textError, double minValue, double ma
 		{
 			try
 			{
-				if ((stod(value) >= minValue && stod(value) <= maxValue))
-					return stod(value);
+				double resultValue = stod(value);
+				if (resultValue >= minValue && resultValue <= maxValue)
+					return resultValue;
 				else
 					PrintErrorText(textError);
 			}
@@ -183,8 +184,9 @@ int GetValue(string textRequest, string textError, int minValue, int maxValue, b
 		{
 			try
 			{
-				if (stoi(value) >= minValue && stoi(value) <= maxValue)
-					return stoi(value);
+				int resultValue = stoi(value);
+				if (resultValue >= minValue && resultValue <= maxValue)
+					return resultValue;
 				else
 					PrintErrorText(textError);
 			}
@@ -397,7 +399,7 @@ void SaveData(vector <Pipe>& vectorPipes, vector <CompressorStation>& vectorComp
 	}
 	else
 	{
-		PrintErrorText("ОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
+		PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
 		Sleep(3000);
 	}
 	fout.close();
@@ -451,7 +453,7 @@ void UploadData(vector <Pipe>& vectorPipes, vector <CompressorStation>& vectorCo
 	}
 	else
 	{
-		PrintErrorText("ОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
+		PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
 		Sleep(3000);
 	}
 	fin.close();

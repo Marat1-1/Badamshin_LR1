@@ -1,15 +1,11 @@
-12
-567
+12.23
+500.32
 0
-32
+12
 789
-1
+0
  
-MonkeyCs
+nameCsProsto
+8
+3
 12
-1
-0
-LoxovskayacS
-2
-1
-0
