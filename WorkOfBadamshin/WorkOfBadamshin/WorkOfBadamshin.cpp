@@ -9,21 +9,6 @@
 
 using namespace std;
 
-enum TableCommand
-{
-	zero = 48,
-	one = 49,
-	two = 50,
-	three = 51,
-	four = 52,
-	five = 53, 
-	six = 54,
-	seven = 55,
-	y =	121,
-	n = 110,
-	esc = 27
-};
-
 // Консоль
 HANDLE myHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -159,8 +144,9 @@ double GetValue(string textRequest, string textError, double minValue, double ma
 				else
 					PrintErrorText(textError);
 			}
-			catch (exception)
+			catch (const exception& e)
 			{
+				cout << e.what()<<endl;
 				PrintErrorText(textError);
 			}
 		}
@@ -204,18 +190,18 @@ int GetValue(string textRequest, string textError, int minValue, int maxValue, b
 
 
 // Запрос на ввод значений: "ИСТИНА" или "ЛОЖЬ"
-bool GetRepair(string textRequest, string textError)
+bool GetBool(string textRequest, string textError)
 {
 	char stateRepair;
 	cout << textRequest;
 	while (true)
 	{
 		stateRepair = _getch();
-		if (stateRepair == y)
+		if (stateRepair == 'y')
 		{
 			return true;
 		}
-		else if (stateRepair == n)
+		else if (stateRepair == 'n')
 		{
 			return false;
 		}
@@ -234,7 +220,7 @@ void CheckPressEscape(string textRequest, string textError)
 		cout << textRequest;
 		char escCommand;
 		escCommand = _getch();
-		if (escCommand == esc)
+		if (escCommand == '\x1b')
 			break;
 		else
 			PrintErrorText(textError);
@@ -250,7 +236,7 @@ Pipe CreatePipe(int id)
 		"Ошибка!!! Вы ввели что-то непонятное.\nДлина трубы может быть либо целым числом, либо числом с плавающей точкой, лежащим в диапазоне от 10 до 100 км, повторите ввод!!!", 10, 100);
 	result.diameter = GetValue("Введите диаметр трубы, размерность миллиметры, диапазон от 500 до 1420 мм (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ",
 		"Ошибка!!! Вы ввели что-то непонятное.\nДиаметр трубы может быть либо целым числом, либо числом с плавающей точкой, лежащим в диапазоне от 500 до 1420 мм, повторите ввод!!!", 500, 1420);
-	result.repair = GetRepair("Укажите находится ли труба в ремонте, если да, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
+	result.repair = GetBool("Укажите находится ли труба в ремонте, если да, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
 		"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ");
 	return result;
 };
@@ -275,37 +261,39 @@ CompressorStation CreateCompressorStation(int id)
 // Вывод символа определённое количество раз
 void PrintChar(char ch, size_t count)
 {
-	for (size_t i = 0; i < count; i++)
+	/*for (size_t i = 0; i < count; i++)
 	{
 		cout << ch;
 	}
-	cout << endl;
+	cout << endl;*/
+
+	cout << string(count, ch) << endl;
 };
 
-
+//##
 // Вывод таблицы труб
-void PrintTablePipes(vector <Pipe>& vectorPipes)
+void PrintTablePipes(const vector <Pipe>& vectorPipes)
 {
 	PrintChar('-', 131);
 	cout << "|" << setw(20) << "ID" << setw(30) << "LENGTH" << setw(30) << "DIAMETER" << setw(30) << "REPAIR" << setw(20) << "|" << endl;
 	PrintChar('-', 131);
-	for (size_t i = 0; i < vectorPipes.size(); i++)
+	for (const auto& p : vectorPipes)
 	{
-		cout << "|" << setw(20) << vectorPipes[i].id << setw(30) << vectorPipes[i].length << setw(30) << vectorPipes[i].diameter << setw(30) << (vectorPipes[i].repair == true ? "true" : "false") << setw(20) << "|" << endl;
+		cout << "|" << setw(20) << p.id << setw(30) << p.length << setw(30) << p.diameter << setw(30) << (p.repair == true ? "true" : "false") << setw(20) << "|" << endl;
 	}
 	PrintChar('-', 131);
 };
 
 
 // Вывод таблицы Компрессорных станций
-void PrintTableCS(vector <CompressorStation>& vectorCompressorStations)
+void PrintTableCS(const vector <CompressorStation>& vectorCompressorStations)
 {
 	PrintChar('-', 172);
 	cout << "|" << setw(20) << "ID" << setw(31) << "NAME" << setw(30) << "CountWorkShops" << setw(40) << "CountWorkShopsInOperation" << setw(30) << "EFFECTIVENESS" << setw(20) << "|" << endl;
 	PrintChar('-', 172);
-	for (size_t i = 0; i < vectorCompressorStations.size(); i++)
+	for (const auto& cs : vectorCompressorStations)
 	{
-		cout << "|" << setw(20) << vectorCompressorStations[i].id << setw(31) << vectorCompressorStations[i].name << setw(30) << vectorCompressorStations[i].countWorkShops << setw(40) << vectorCompressorStations[i].countWorkShopsInOperation << setw(30) << vectorCompressorStations[i].effectiveness << setw(20) << "|" << endl;
+		cout << "|" << setw(20) << cs.id << setw(31) << cs.name << setw(30) << cs.countWorkShops << setw(40) << cs.countWorkShopsInOperation << setw(30) << cs.effectiveness << setw(20) << "|" << endl;
 	}
 	PrintChar('-', 172);
 };
@@ -327,12 +315,16 @@ void ChangePipe(vector <Pipe>& vectorPipes)
 	{
 		localId = GetValue("\nВведите номер (id) трубы, которую вы бы хотели редактировать (id не должен превышать общее количество труб): ",
 			"Вы ввели недопустимое значение, id трубы не должен превышать общее количество труб, а также он является натуральным числом!!!", 1, size(vectorPipes));
-		cout << "Изначальное состояние трубы: " << (vectorPipes[localId - 1].repair == true ? "в ремонте" : "не в ремонте") << endl;
-		vectorPipes[localId - 1].repair = GetRepair("Укажите новое состояние для трубы, если она в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
+
+		cout << "Изначальное состояние трубы: " 
+			<< (vectorPipes[localId - 1].repair ? "в ремонте" : "не в ремонте") 
+			<< endl;
+
+		vectorPipes[localId - 1].repair = GetBool("Укажите новое состояние для трубы, если она в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
 			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ");
-		query = GetRepair("\n\nХотите ли вы продолжить редактировать трубы, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
+		query = GetBool("\n\nХотите ли вы продолжить редактировать трубы, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
 			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ");
-		if (query != true)
+		if (!query)
 			break;
 	}
 };
@@ -341,8 +333,6 @@ void ChangePipe(vector <Pipe>& vectorPipes)
 // Редактирование Компрессорных станций
 void ChangeCS(vector <CompressorStation>& vectorCompressorStations)
 {
-	size_t localId;
-	bool query;
 	cout << "Всего добавлено компрессорных станций: " << size(vectorCompressorStations) << endl;
 	if (size(vectorCompressorStations) == 0)
 	{
@@ -352,7 +342,7 @@ void ChangeCS(vector <CompressorStation>& vectorCompressorStations)
 	}
 	while (true)
 	{
-		localId = GetValue("\nВведите номер (id) компрессорной станции, которую вы бы хотели редактировать (id не должен превышать общее количество компрессорных станций): ",
+		size_t localId = GetValue("\nВведите номер (id) компрессорной станции, которую вы бы хотели редактировать (id не должен превышать общее количество компрессорных станций): ",
 			"Вы ввели недопустимое значение, id трубы не должен превышать общее количество компрессорных станций, а также он является натуральным числом!!!", 
 			1, size(vectorCompressorStations));
 		cout << "Количество цехов у данной компрессорной станции: " << vectorCompressorStations[localId - 1].countWorkShops << endl;
@@ -360,7 +350,7 @@ void ChangeCS(vector <CompressorStation>& vectorCompressorStations)
 		vectorCompressorStations[localId - 1].countWorkShopsInOperation = GetValue("Введите новое количество цехов в работе (оно не должно превышать общее количество цехов): ",
 			"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 
 			0, vectorCompressorStations[localId - 1].countWorkShops, true);
-		query = GetRepair("\n\nХотите ли вы продолжить редактировать компрессоные станции, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
+		bool query = GetBool("\n\nХотите ли вы продолжить редактировать компрессоные станции, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
 			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ");
 		if (query != true)
 			break;
@@ -390,6 +380,7 @@ void SaveData(vector <Pipe>& vectorPipes, vector <CompressorStation>& vectorComp
 				<< vectorCompressorStations[i].countWorkShopsInOperation << endl
 				<< vectorCompressorStations[i].effectiveness << endl;
 		}
+		fout.close();
 		while (percent <= 100)
 		{
 			cout << "\t\t\t\t\t\t" << "     Прогресс: " << percent++ << "%";
@@ -402,7 +393,6 @@ void SaveData(vector <Pipe>& vectorPipes, vector <CompressorStation>& vectorComp
 		PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
 		Sleep(3000);
 	}
-	fout.close();
 };
 
 
@@ -438,6 +428,7 @@ void UploadData(vector <Pipe>& vectorPipes, vector <CompressorStation>& vectorCo
 				vectorCompressorStations.push_back(newCompressorStation);
 				fin.ignore(1000, '\n');
 			}
+			fin.close();
 			while (percent <= 100)
 			{
 				cout << "\t\t\t\t\t\t" << "     Прогресс: " << percent++ << "%";
@@ -456,7 +447,6 @@ void UploadData(vector <Pipe>& vectorPipes, vector <CompressorStation>& vectorCo
 		PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
 		Sleep(3000);
 	}
-	fin.close();
 };
 
 // Установка шрифта в консоли
@@ -478,16 +468,14 @@ int main()
 	setlocale(LC_ALL, "Russian");
 	SetConsoleTitle(L"Лабораторная работа №1, Бадамшин Марат Ринатович, АА-20-05");
 	ChangeConsoleFont();
-	char command;
 	vector <Pipe> vectorPipes;
 	vector <CompressorStation> vectorCompressorStations;
 	while (true)
 	{
 		PrintMenu();
-		command = _getch();
-		switch (command)
+		switch (_getch())
 		{
-		case one:
+		case '1':
 		{
 			system("CLS");
 			PrintTitle("\t\t\t\t\t\tИНИЦИАЛИЗАЦИЯ ТРУБЫ");
@@ -495,7 +483,7 @@ int main()
 			vectorPipes.push_back(NewPipe);
 			break;
 		}
-		case two:
+		case '2':
 		{
 			system("CLS");
 			PrintTitle("\t\t\t\t\tИНИЦИАЛИЗАЦИЯ КОМПРЕССОРНОЙ СТАНЦИИ");
@@ -503,7 +491,7 @@ int main()
 			vectorCompressorStations.push_back(NewComressorStation);
 			break;
 		}
-		case three:
+		case '3':
 		{
 			system("ClS");
 			PrintTitle("\n\t\t\t\t\t\t\tТАБЛИЦА ТРУБ\n");
@@ -513,35 +501,35 @@ int main()
 			CheckPressEscape("\n\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
 			break;
 		}
-		case four:
+		case '4':
 		{
 			system("CLS");
 			PrintTitle("\n\t\t\t\t\tРЕДАКТИРОВАНИЕ ТРУБ\n");
 			ChangePipe(vectorPipes);
 			break;
 		}
-		case five:
+		case '5':
 		{
 			system("CLS");
 			PrintTitle("\n\t\t\t\t\tРЕДАКТИРОВАНИЕ КОМПРЕССОРНЫХ СТАНЦИЙ\n");
 			ChangeCS(vectorCompressorStations);
 			break;
 		}
-		case six:
+		case '6':
 		{
 			system("CLS");
 			PrintTitle("\n\t\t\t\t\t\tСОХРАНЕНИЕ ДАННЫХ В ФАЙЛ\n");
 			SaveData(vectorPipes, vectorCompressorStations);
 			break;
 		}
-		case seven:
+		case '7':
 		{
 			system("CLS");
 			PrintTitle("\n\t\t\t\t\t\tЗАГРУЗКА ДАННЫХ ИЗ ФАЙЛА\n");
 			UploadData(vectorPipes, vectorCompressorStations);
 			break;
 		}
-		case zero:
+		case '0':
 		{
 			system("CLS");
 			PrintTitle("\n\tИтак, вы нажали на выход, на этом программа завершила свой сеанс работы.\n\t\t\t\tДо скорой встречи! :)");
