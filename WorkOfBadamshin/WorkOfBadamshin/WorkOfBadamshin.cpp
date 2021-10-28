@@ -62,36 +62,6 @@ void PrintTitle(string textTitle)
 	SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 };
 
-// Проверка ввода числа double
-bool CheckInputDigit(string number)
-{
-	int counter = 0;
-	if (size(number) == 0 || !isdigit(number[0]))
-		return false;
-	for (size_t i = 0; i < size(number); i++)
-	{
-		if (!isdigit(number[i]))
-			if (number[i] != ',')
-				return false;
-			else
-				counter++;
-	}
-	return counter <= 1;
-};
-
-// Проверка ввода числа int
-bool CheckInputDigit(string number, bool thisInt)
-{
-	if (size(number) == 0 || !isdigit(number[0]))
-		return false;
-	for (size_t i = 0; i < size(number); i++)
-	{
-		if (!isdigit(number[i]))
-			return false;
-	}
-	return true;
-};
-
 
 // Проверка, не состоит ли строка только из пробелов
 bool CheckCountSpace(string str)
@@ -125,68 +95,30 @@ string GetNameCS(string textRequest, string textError)
 };
 
 
-// Запрос на ввод значений типа double в диапозоне от minValue до maxValue
-double GetValue(string textRequest, string textError, double minValue, double maxValue)
+// Шаблон на ввод значения разных типов, double, int и т.д.
+template <typename T>
+T GetValue(string textRequest, string textError, T minValue, T maxValue)
 {
-	string value;
+	T value;
 	while (true)
 	{
 		cout << textRequest;
-		cin.seekg(cin.eof());
-		getline(cin, value);
-		if (CheckInputDigit(value))
+		cin >> value;
+		if (cin.good() && cin.peek() == '\n')
 		{
-			try
-			{
-				double resultValue = stod(value);
-				if (resultValue >= minValue && resultValue <= maxValue)
-					return resultValue;
-				else
-					PrintErrorText(textError);
-			}
-			catch (const exception& e)
-			{
-				cout << e.what()<<endl;
+			if (value >= minValue && value <= maxValue)
+				return value;
+			else
 				PrintErrorText(textError);
-			}
 		}
 		else
 		{
+			cin.clear();
+			cin.ignore(1000, '\n');
 			PrintErrorText(textError);
 		}
 	}
-};
-
-// Запрос на ввод типа int от minValue до maxValue
-int GetValue(string textRequest, string textError, int minValue, int maxValue, bool thisInt)
-{
-	string value;
-	while (true)
-	{
-		cout << textRequest;
-		cin.seekg(cin.eof());
-		getline(cin, value);
-		if (CheckInputDigit(value, true))
-		{
-			try
-			{
-				int resultValue = stoi(value);
-				if (resultValue >= minValue && resultValue <= maxValue)
-					return resultValue;
-				else
-					PrintErrorText(textError);
-			}
-			catch (exception)
-			{
-				PrintErrorText(textError);
-			}
-		}
-		else
-		{
-			PrintErrorText(textError);
-		}
-	}
-};
+}
 
 
 // Запрос на ввод значений: "ИСТИНА" или "ЛОЖЬ"
@@ -233,9 +165,9 @@ Pipe CreatePipe(int id)
 	Pipe result;
 	result.id = id;
 	result.length = GetValue("Введите длину трубы, размерность - километры, диапазон от 10 до 100 км (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ", 
-		"Ошибка!!! Вы ввели что-то непонятное.\nДлина трубы может быть либо целым числом, либо числом с плавающей точкой, лежащим в диапазоне от 10 до 100 км, повторите ввод!!!", 10, 100);
+		"Ошибка!!! Вы ввели что-то непонятное.\nДлина трубы может быть либо целым числом, либо числом с плавающей точкой, лежащим в диапазоне от 10 до 100 км, повторите ввод!!!", 10.0, 100.0);
 	result.diameter = GetValue("Введите диаметр трубы, размерность миллиметры, диапазон от 500 до 1420 мм (необязательно целое число, чтобы отделить дробную часть используйте \",\"): ",
-		"Ошибка!!! Вы ввели что-то непонятное.\nДиаметр трубы может быть либо целым числом, либо числом с плавающей точкой, лежащим в диапазоне от 500 до 1420 мм, повторите ввод!!!", 500, 1420);
+		"Ошибка!!! Вы ввели что-то непонятное.\nДиаметр трубы может быть либо целым числом, либо числом с плавающей точкой, лежащим в диапазоне от 500 до 1420 мм, повторите ввод!!!", 500.0, 1420.0);
 	result.repair = GetBool("Укажите находится ли труба в ремонте, если да, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
 		"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ");
 	return result;
@@ -249,11 +181,11 @@ CompressorStation CreateCompressorStation(int id)
 	result.name = GetNameCS("Введите название КС (длина не больше 30 символов): ",
 		"Ошибка!!! Название не может состоять только из пробелов или пустой строки и иметь длину больше чем 40 символов (сообщение пропадёт через 3 секунды)");
 	result.countWorkShops = GetValue("Введите количество цехов КС (не больше 20): ",
-		"Ошибка!!! Количество цехов это целое число, без посторонних символов, в виде букв, точек и также число должно быть меньше 20.", 0, 20, true);
+		"Ошибка!!! Количество цехов это целое число, без посторонних символов, в виде букв, точек и также число должно быть меньше 20.", 0, 20);
 	result.countWorkShopsInOperation = GetValue("Введите количество цехов в работе (оно не должно превышать общее количество цехов): ", 
-		"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 0, result.countWorkShops,true);
+		"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 0, result.countWorkShops);
 	result.effectiveness = GetValue("Введите значение эффективности КС (оно измеряется в процентах, поэтому введите число от 0 до 100%): ",
-		"Ошибка!!! Вы ввели что-то непонятное.\nЭффективность КС может быть либо целым числом, либо числом с плавающей точкой, лежащим в пределах от 0 до 100.\nПовторите ввод!!!", 0, 100);
+		"Ошибка!!! Вы ввели что-то непонятное.\nЭффективность КС может быть либо целым числом, либо числом с плавающей точкой, лежащим в пределах от 0 до 100.\nПовторите ввод!!!", 0.0, 100.0);
 	return result;
 };
 
@@ -261,12 +193,6 @@ CompressorStation CreateCompressorStation(int id)
 // Вывод символа определённое количество раз
 void PrintChar(char ch, size_t count)
 {
-	/*for (size_t i = 0; i < count; i++)
-	{
-		cout << ch;
-	}
-	cout << endl;*/
-
 	cout << string(count, ch) << endl;
 };
 
@@ -274,28 +200,30 @@ void PrintChar(char ch, size_t count)
 // Вывод таблицы труб
 void PrintTablePipes(const vector <Pipe>& vectorPipes)
 {
-	PrintChar('-', 131);
-	cout << "|" << setw(20) << "ID" << setw(30) << "LENGTH" << setw(30) << "DIAMETER" << setw(30) << "REPAIR" << setw(20) << "|" << endl;
-	PrintChar('-', 131);
+	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 131;
+	PrintChar('-', tableWidth);
+	cout << "|" << setw(tabulation_20) << "ID" << setw(tabulation_30) << "LENGTH" << setw(tabulation_30) << "DIAMETER" << setw(tabulation_30) << "REPAIR" << setw(tabulation_20) << "|" << endl;
+	PrintChar('-', tableWidth);
 	for (const auto& p : vectorPipes)
 	{
-		cout << "|" << setw(20) << p.id << setw(30) << p.length << setw(30) << p.diameter << setw(30) << (p.repair == true ? "true" : "false") << setw(20) << "|" << endl;
+		cout << "|" << setw(tabulation_20) << p.id << setw(tabulation_30) << p.length << setw(tabulation_30) << p.diameter << setw(tabulation_30) << (p.repair == true ? "true" : "false") << setw(tabulation_20) << "|" << endl;
 	}
-	PrintChar('-', 131);
+	PrintChar('-', tableWidth);
 };
 
 
 // Вывод таблицы Компрессорных станций
 void PrintTableCS(const vector <CompressorStation>& vectorCompressorStations)
 {
-	PrintChar('-', 172);
-	cout << "|" << setw(20) << "ID" << setw(31) << "NAME" << setw(30) << "CountWorkShops" << setw(40) << "CountWorkShopsInOperation" << setw(30) << "EFFECTIVENESS" << setw(20) << "|" << endl;
-	PrintChar('-', 172);
+	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 172;
+	PrintChar('-', tableWidth);
+	cout << "|" << setw(tabulation_20) << "ID" << setw(tabulation_30 + 1) << "NAME" << setw(tabulation_30) << "CountWorkShops" << setw(tabulation_30 + 10) << "CountWorkShopsInOperation" << setw(tabulation_30) << "EFFECTIVENESS" << setw(tabulation_20) << "|" << endl;
+	PrintChar('-', tableWidth);
 	for (const auto& cs : vectorCompressorStations)
 	{
-		cout << "|" << setw(20) << cs.id << setw(31) << cs.name << setw(30) << cs.countWorkShops << setw(40) << cs.countWorkShopsInOperation << setw(30) << cs.effectiveness << setw(20) << "|" << endl;
+		cout << "|" << setw(tabulation_20) << cs.id << setw(tabulation_30 + 1) << cs.name << setw(tabulation_30) << cs.countWorkShops << setw(tabulation_30 + 10) << cs.countWorkShopsInOperation << setw(tabulation_30) << cs.effectiveness << setw(tabulation_20) << "|" << endl;
 	}
-	PrintChar('-', 172);
+	PrintChar('-', tableWidth);
 };
 
 
@@ -314,8 +242,7 @@ void ChangePipe(vector <Pipe>& vectorPipes)
 	while (true)
 	{
 		localId = GetValue("\nВведите номер (id) трубы, которую вы бы хотели редактировать (id не должен превышать общее количество труб): ",
-			"Вы ввели недопустимое значение, id трубы не должен превышать общее количество труб, а также он является натуральным числом!!!", 1, size(vectorPipes));
-
+			"Вы ввели недопустимое значение, id трубы не должен превышать общее количество труб, а также он является натуральным числом!!!", 1, (int)size(vectorPipes));
 		cout << "Изначальное состояние трубы: " 
 			<< (vectorPipes[localId - 1].repair ? "в ремонте" : "не в ремонте") 
 			<< endl;
@@ -344,12 +271,12 @@ void ChangeCS(vector <CompressorStation>& vectorCompressorStations)
 	{
 		size_t localId = GetValue("\nВведите номер (id) компрессорной станции, которую вы бы хотели редактировать (id не должен превышать общее количество компрессорных станций): ",
 			"Вы ввели недопустимое значение, id трубы не должен превышать общее количество компрессорных станций, а также он является натуральным числом!!!", 
-			1, size(vectorCompressorStations));
+			1, (int)size(vectorCompressorStations));
 		cout << "Количество цехов у данной компрессорной станции: " << vectorCompressorStations[localId - 1].countWorkShops << endl;
 		cout << "Количество цехов в работе у данной компрессорной станции: " << vectorCompressorStations[localId - 1].countWorkShopsInOperation << endl;
 		vectorCompressorStations[localId - 1].countWorkShopsInOperation = GetValue("Введите новое количество цехов в работе (оно не должно превышать общее количество цехов): ",
 			"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 
-			0, vectorCompressorStations[localId - 1].countWorkShops, true);
+			0, vectorCompressorStations[localId - 1].countWorkShops);
 		bool query = GetBool("\n\nХотите ли вы продолжить редактировать компрессоные станции, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
 			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ");
 		if (query != true)
@@ -410,9 +337,9 @@ void UploadData(vector <Pipe>& vectorPipes, vector <CompressorStation>& vectorCo
 			{
 				Pipe newPipe;
 				newPipe.id = size(vectorPipes);
-				fin >> newPipe.length;
-				fin >> newPipe.diameter;
-				fin >> newPipe.repair;
+				fin >> newPipe.length
+					>> newPipe.diameter
+					>> newPipe.repair;
 				vectorPipes.push_back(newPipe);
 				fin.ignore(1000, '\n');
 			}
@@ -422,9 +349,9 @@ void UploadData(vector <Pipe>& vectorPipes, vector <CompressorStation>& vectorCo
 				CompressorStation newCompressorStation;
 				newCompressorStation.id = size(vectorCompressorStations);
 				getline(fin, newCompressorStation.name);
-				fin >> newCompressorStation.countWorkShops;
-				fin >> newCompressorStation.countWorkShopsInOperation;
-				fin >> newCompressorStation.effectiveness;
+				fin >> newCompressorStation.countWorkShops
+					>> newCompressorStation.countWorkShopsInOperation
+					>> newCompressorStation.effectiveness;
 				vectorCompressorStations.push_back(newCompressorStation);
 				fin.ignore(1000, '\n');
 			}
@@ -448,6 +375,7 @@ void UploadData(vector <Pipe>& vectorPipes, vector <CompressorStation>& vectorCo
 		Sleep(3000);
 	}
 };
+
 
 // Установка шрифта в консоли
 void ChangeConsoleFont()
