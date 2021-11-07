@@ -17,7 +17,7 @@ public:
 	void ChangeConsoleFont();
 	void SetRusLocale();
 	void SetTitleConsoleWindow();
-	Console(HANDLE myHandle_) : myHandle(myHandle_) {};
+	Console(HANDLE& myHandle_) : myHandle(myHandle_) {};
 };
 
 #endif // !CONSOLE_H

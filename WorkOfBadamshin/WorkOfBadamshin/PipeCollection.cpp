@@ -50,7 +50,7 @@ void PipeCollection::ChangePipe(Console& console)
 	}
 }
 
-// Вывод таблицы труб на экран
+// Вывод таблицы труб на экран (вектор самого класса)
 void PipeCollection::PrintTablePipes(Console& console)
 {
 	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 131;
@@ -58,6 +58,20 @@ void PipeCollection::PrintTablePipes(Console& console)
 	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30) << "LENGTH" << std::setw(tabulation_30) << "DIAMETER" << std::setw(tabulation_30) << "REPAIR" << std::setw(tabulation_20) << "|" << std::endl;
 	console.PrintChar('-', tableWidth);
 	for (const auto& p : vectorPipes)
+	{
+		std::cout << "|" << std::setw(tabulation_20) << p.id << std::setw(tabulation_30) << p.length << std::setw(tabulation_30) << p.diameter << std::setw(tabulation_30) << (p.repair == true ? "true" : "false") << std::setw(tabulation_20) << "|" << std::endl;
+	}
+	console.PrintChar('-', tableWidth);
+}
+
+// Вывод таблицы труб на экран, при этом функция выводит любой вектор труб
+void PipeCollection::PrintTablePipes(const std::vector<Pipe>& vectorPipesForPrint, Console& console)
+{
+	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 131;
+	console.PrintChar('-', tableWidth);
+	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30) << "LENGTH" << std::setw(tabulation_30) << "DIAMETER" << std::setw(tabulation_30) << "REPAIR" << std::setw(tabulation_20) << "|" << std::endl;
+	console.PrintChar('-', tableWidth);
+	for (const auto& p : vectorPipesForPrint)
 	{
 		std::cout << "|" << std::setw(tabulation_20) << p.id << std::setw(tabulation_30) << p.length << std::setw(tabulation_30) << p.diameter << std::setw(tabulation_30) << (p.repair == true ? "true" : "false") << std::setw(tabulation_20) << "|" << std::endl;
 	}
@@ -120,16 +134,13 @@ void PipeCollection::DownloadFromFile(std::ifstream& fin, Console& console)
 		else
 		{
 			console.PrintErrorText("\nНельзя загружать данные из пустого файла, сначала нужно сохранить там данные!!!");
-			Sleep(3000);
 		}
 	}
 	else
 	{
 		console.PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
-		Sleep(3000);
 	}
 }
-
 
 // Удаление трубы
 void PipeCollection::DeletePipe(Console& console)
@@ -162,4 +173,31 @@ void PipeCollection::DeletePipe(Console& console)
 		if (!query)
 			break;
 	}
+}
+
+// Фильтр труб
+void PipeCollection::FilterPipe(Console& console)
+{
+	bool query;
+	VerificationClass<size_t> verification;
+	std::vector<Pipe> filterVectorPipes;
+	if (Pipe::countPipes == 0)
+	{
+		console.PrintErrorText("Вы не добавили ни одной трубы, фильтрация недоступна!");
+		verification.GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!", console);
+		return;
+	}
+	query = verification.GetBoolValue("Если вам нужны трубы, состояние которых: \"В ремонте\", то кликните по \"y\", если же нужны исправные трубы, то кликните по \"n\"",
+		"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\" или же по \"n\": ", console);
+	for (const auto& v : vectorPipes)
+		if (v.repair == query)
+			filterVectorPipes.push_back(v);
+	if (size(filterVectorPipes) != 0)
+	{
+		console.PrintTitleText("\n\n\t\tТрубы по вашему фильтру");
+		PrintTablePipes(filterVectorPipes, console);
+	}
+	else
+		console.PrintErrorText("По вашему фильтру не было найдено ни одной трубы!!!");
+	verification.GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!", console);
 }

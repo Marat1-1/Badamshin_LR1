@@ -13,11 +13,11 @@ public:
 	double length;
 	double diameter;
 	bool repair;
-	friend class PipeCollection;
 	Pipe()
 	{
 		countPipes++;
 	}
+	friend class PipeCollection;
 };
 
 // Структура КС
@@ -28,14 +28,14 @@ private:
 	static size_t countCS;
 public:
 	std::string name;
-	int countWorkShops;
-	int countWorkShopsInOperation;
+	size_t countWorkShops;
+	size_t countWorkShopsInOperation;
 	size_t effectiveness;
-	friend class CompressorStationCollection;
 	CompressorStation()
 	{
 		countCS++;
 	}
+	friend class CompressorStationCollection;
 };
 
 #endif // !WORKOFBADAMSHIN_H

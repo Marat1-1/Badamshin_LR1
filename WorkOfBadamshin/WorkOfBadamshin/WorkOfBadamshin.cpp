@@ -66,8 +66,11 @@ int main()
 		case '6':
 		{
 			system("CLS");
+			VerificationClass<size_t> verification;
 			console.PrintTitleText("\n\t\tСОХРАНЕНИЕ ДАННЫХ В ФАЙЛ\n");
-			std::ofstream fout("data.txt");
+			std::string fileName = verification.GetStringValue("Введите имя файла, в который вы хотели бы сохранить данные (.txt, максимум 30 символов): ",
+				"Ошибка!!! Название файла не может состоять только из пробелов или пустой строки и иметь длину больше чем 30 символов!!!", 30, console);
+			std::ofstream fout(fileName);
 			newPipeCollection.SaveToFile(fout, console);
 			fout << ' ' << std::endl;
 			newCSColletion.SaveToFile(fout, console);
@@ -78,8 +81,11 @@ int main()
 		case '7':
 		{
 			system("CLS");
+			VerificationClass<size_t> verification;
 			console.PrintTitleText("\n\t\tЗАГРУЗКА ДАННЫХ ИЗ ФАЙЛА\n");
-			std::ifstream fin("data.txt");
+			std::string fileName = verification.GetStringValue("Введите имя файла, в который вы хотели бы сохранить данные (.txt, максимум 30 символов): ",
+				"Ошибка!!! Название файла не может состоять только из пробелов или пустой строки и иметь длину больше чем 30 символов!!!", 30, console);
+			std::ifstream fin(fileName);
 			newPipeCollection.DownloadFromFile(fin, console);
 			fin.ignore(10000, '\n');
 			newCSColletion.DownloadFromFile(fin, console);
@@ -101,6 +107,20 @@ int main()
 			newCSColletion.DeleteCS(console);
 			break;
 		}
+		case 'a':
+		{
+			system("CLS");
+			console.PrintTitleText("\n\t\tФИЛЬТРАЦИЯ ТРУБ\n");
+			newPipeCollection.FilterPipe(console);
+			break;
+		}
+		case 'b':
+		{
+			system("CLS");
+			console.PrintTitleText("\n\t\tФИЛЬТРАЦИЯ КС");
+			newCSColletion.FilterCS(console);
+			break;
+		}
 		case '0':
 		{
 			system("CLS");
@@ -109,9 +129,11 @@ int main()
 			return 0;
 		}
 		default:
+		{
 			console.PrintErrorText("\nНекорректный ввод данных!!! Нажмите на число, которое соотвествует команде из списка!!!\nСообщение пропадёт через 3 секунды");
 			Sleep(3000);
 			break;
+		}
 		}
 		system("CLS");
 	}
