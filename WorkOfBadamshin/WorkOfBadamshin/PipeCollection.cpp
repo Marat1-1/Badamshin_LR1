@@ -16,7 +16,7 @@ void PipeCollection::AddPipe(Console& console)
 		"Ошибка!!! Вы ввели что-то непонятное.\nДиаметр трубы может быть либо целым числом, либо числом с плавающей точкой, лежащим в диапазоне от 500 до 1420 мм, повторите ввод!!!", 500.0, 1420.0, console);
 
 	pipe.repair = verification.GetBoolValue("Укажите находится ли труба в ремонте, если да, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
-		"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ", console);
+		"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!", console);
 	vectorPipes.push_back(pipe);
 }
 
@@ -44,7 +44,7 @@ void PipeCollection::ChangePipe(Console& console)
 		vectorPipes[localId - 1].repair = verification.GetBoolValue("Укажите новое состояние для трубы, если она в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
 			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ", console);
 		query = verification.GetBoolValue("\n\nХотите ли вы продолжить редактировать трубы, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
-			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ", console);
+			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!", console);
 		if (!query)
 			break;
 	}
@@ -65,15 +65,16 @@ void PipeCollection::PrintTablePipes(Console& console)
 }
 
 // Вывод таблицы труб на экран, при этом функция выводит любой вектор труб
-void PipeCollection::PrintTablePipes(const std::vector<Pipe>& vectorPipesForPrint, Console& console)
+void PipeCollection::PrintFilterTablePipes(Console& console)
 {
 	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 131;
+	console.PrintTitleText("\n\n\t\tТаблица труб");
 	console.PrintChar('-', tableWidth);
 	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30) << "LENGTH" << std::setw(tabulation_30) << "DIAMETER" << std::setw(tabulation_30) << "REPAIR" << std::setw(tabulation_20) << "|" << std::endl;
 	console.PrintChar('-', tableWidth);
-	for (const auto& p : vectorPipesForPrint)
+	for (const auto& id : vectorIdForFilter)
 	{
-		std::cout << "|" << std::setw(tabulation_20) << p.id << std::setw(tabulation_30) << p.length << std::setw(tabulation_30) << p.diameter << std::setw(tabulation_30) << (p.repair == true ? "true" : "false") << std::setw(tabulation_20) << "|" << std::endl;
+		std::cout << "|" << std::setw(tabulation_20) << vectorPipes[id-1].id << std::setw(tabulation_30) << vectorPipes[id-1].length << std::setw(tabulation_30) << vectorPipes[id-1].diameter << std::setw(tabulation_30) << (vectorPipes[id-1].repair == true ? "true" : "false") << std::setw(tabulation_20) << "|" << std::endl;
 	}
 	console.PrintChar('-', tableWidth);
 }
@@ -169,7 +170,7 @@ void PipeCollection::DeletePipe(Console& console)
 		}
 		console.PrintTitleText("Труба была успешно удалена!");
 		query = verification.GetBoolValue("\n\nХотите ли вы продолжить удалять трубы, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
-			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет: ", console);
+			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!", console);
 		if (!query)
 			break;
 	}
@@ -180,24 +181,50 @@ void PipeCollection::FilterPipe(Console& console)
 {
 	bool query;
 	VerificationClass<size_t> verification;
-	std::vector<Pipe> filterVectorPipes;
+	query = verification.GetBoolValue("\nЕсли вам нужны трубы, состояние которых: \"В ремонте\", то кликните по \"y\", если же нужны исправные трубы, то кликните по \"n\"",
+		"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\" или же по \"n\"!!!", console);
+	for (const auto& v : vectorPipes)
+		if (v.repair == query)
+			vectorIdForFilter.push_back(v.id);
+}
+
+// Пакетное редактирование труб
+void PipeCollection::BatchChangePipe(Console& console)
+{
+	VerificationClass<size_t> verification;
+	bool query;
+	bool repairStatus;
 	if (Pipe::countPipes == 0)
 	{
-		console.PrintErrorText("Вы не добавили ни одной трубы, фильтрация недоступна!");
+		console.PrintErrorText("\nВы не добавили ни одной трубы, пакетное редактирование недоступно!");
 		verification.GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!", console);
 		return;
 	}
-	query = verification.GetBoolValue("Если вам нужны трубы, состояние которых: \"В ремонте\", то кликните по \"y\", если же нужны исправные трубы, то кликните по \"n\"",
-		"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\" или же по \"n\": ", console);
-	for (const auto& v : vectorPipes)
-		if (v.repair == query)
-			filterVectorPipes.push_back(v);
-	if (size(filterVectorPipes) != 0)
+	query = verification.GetBoolValue("\nНажмите на \"y\", если хотите редактировать все трубы, на \"n\", если только определённое подмножество: ",
+		"\nОшибка!!! Вы нажали на некорректную кнопку, осуществите ввод по указанным вам правилам!!!", console);
+	if (!query)
 	{
-		console.PrintTitleText("\n\n\t\tТрубы по вашему фильтру");
-		PrintTablePipes(filterVectorPipes, console);
+		FilterPipe(console);
+		if (size(vectorIdForFilter) != 0)
+		{
+			PrintFilterTablePipes(console);
+			repairStatus = verification.GetBoolValue("\n\nУкажите новое состояние для выбранных труб, если в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
+				"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!", console);
+			for (const auto& p : vectorIdForFilter)
+				vectorPipes[p - 1].repair = repairStatus;
+			console.PrintTitleText("\nТрубы отредактированы!");
+		}
+		else
+			console.PrintErrorText("\nПо вашему фильтру не было найдено ни одной трубы!");
 	}
 	else
-		console.PrintErrorText("По вашему фильтру не было найдено ни одной трубы!!!");
-	verification.GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!", console);
+	{
+		repairStatus = verification.GetBoolValue("\n\nУкажите новое состояние для выбранных труб, если в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
+			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!", console);
+		for (auto& v : vectorPipes)
+			v.repair = repairStatus;
+		console.PrintTitleText("\nТрубы отредактированы!");
+	}
+	vectorIdForFilter.clear();
+	system("pause");
 }

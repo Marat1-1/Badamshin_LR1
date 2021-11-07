@@ -110,15 +110,15 @@ int main()
 		case 'a':
 		{
 			system("CLS");
-			console.PrintTitleText("\n\t\tФИЛЬТРАЦИЯ ТРУБ\n");
-			newPipeCollection.FilterPipe(console);
+			console.PrintTitleText("\n\t\t\tПАКЕТНОЕ РЕДАКТИРОВАНИЕ ТРУБ");
+			newPipeCollection.BatchChangePipe(console);
 			break;
 		}
 		case 'b':
 		{
 			system("CLS");
-			console.PrintTitleText("\n\t\tФИЛЬТРАЦИЯ КС");
-			newCSColletion.FilterCS(console);
+			console.PrintTitleText("\n\t\t\t\tПАКЕТНОЕ РЕДАКТИРОВАНИЕ КС");
+			newCSColletion.BatchChangeCS(console);
 			break;
 		}
 		case '0':

@@ -83,9 +83,9 @@ template <typename T>
 bool VerificationClass<T>::GetBoolValue(std::string textRequest, std::string textError, Console console)
 {
 	char stateRepair;
-	std::cout << textRequest;
 	while (true)
 	{
+		std::cout << textRequest;
 		stateRepair = _getch();
 		if (stateRepair == 'y')
 		{
