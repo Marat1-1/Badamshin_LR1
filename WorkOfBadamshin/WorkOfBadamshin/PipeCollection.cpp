@@ -54,6 +54,7 @@ void PipeCollection::ChangePipe(Console& console)
 void PipeCollection::PrintTablePipes(Console& console)
 {
 	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 131;
+	console.PrintTitleText("\n\t\t\t\tТаблица труб");
 	console.PrintChar('-', tableWidth);
 	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30) << "LENGTH" << std::setw(tabulation_30) << "DIAMETER" << std::setw(tabulation_30) << "REPAIR" << std::setw(tabulation_20) << "|" << std::endl;
 	console.PrintChar('-', tableWidth);
@@ -219,6 +220,7 @@ void PipeCollection::BatchChangePipe(Console& console)
 	}
 	else
 	{
+		PrintTablePipes(console);
 		repairStatus = verification.GetBoolValue("\n\nУкажите новое состояние для выбранных труб, если в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
 			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!", console);
 		for (auto& v : vectorPipes)

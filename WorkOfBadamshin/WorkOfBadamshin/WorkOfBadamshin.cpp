@@ -16,7 +16,7 @@ int main()
 	Console console(myHandle);
 	console.SetRusLocale();
 	console.SetTitleConsoleWindow();
-	console.ChangeConsoleFont();
+	console.ChangeConsoleFont(0, 20);
 	PipeCollection newPipeCollection;
 	CompressorStationCollection newCSColletion;
 	while (true)
@@ -42,9 +42,9 @@ int main()
 		{
 			VerificationClass<size_t> verification;
 			system("ClS");
-			console.PrintTitleText("\n\t\t\t\t\t\t\tТАБЛИЦА ТРУБ\n");
+			console.PrintTitleText("\n\t\t\t\t\t\t\tПРОСМОТР ВСЕХ ТРУБ\n");
 			newPipeCollection.PrintTablePipes(console);
-			console.PrintTitleText("\n\n\n\n\t\t\t\t\t\t\t\tТАБЛИЦА КОМПРЕССОРНЫХ СТАНЦИЙ\n");
+			console.PrintTitleText("\n\n\n\n\t\t\t\t\t\t\tПРОСМОТР ВСЕХ КОМПРЕССОРНЫХ СТАНЦИЙ\n");
 			newCSColletion.PrintTableCS(console);
 			verification.GetPressEscape("\n\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!", console);
 			break;

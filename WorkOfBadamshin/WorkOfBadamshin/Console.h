@@ -14,7 +14,7 @@ public:
 	void PrintMenu();
 	void PrintTitleText(std::string);
 	void PrintErrorText(std::string);
-	void ChangeConsoleFont();
+	void ChangeConsoleFont(size_t, size_t);
 	void SetRusLocale();
 	void SetTitleConsoleWindow();
 	Console(HANDLE& myHandle_) : myHandle(myHandle_) {};

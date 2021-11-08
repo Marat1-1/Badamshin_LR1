@@ -59,6 +59,7 @@ void CompressorStationCollection::ChangeCS(Console& console)
 void CompressorStationCollection::PrintTableCS(Console& console)
 {
 	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 172;
+	console.PrintTitleText("\n\t\t\t\tТаблица КС");
 	console.PrintChar('-', tableWidth);
 	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30 + 1) << "NAME" << std::setw(tabulation_30) << "CountWorkShops" << std::setw(tabulation_30 + 10) << "CountWorkShopsInOperation" << std::setw(tabulation_30) << "EFFECTIVENESS" << std::setw(tabulation_20) << "|" << std::endl;
 	console.PrintChar('-', tableWidth);
@@ -283,6 +284,7 @@ void CompressorStationCollection::BatchChangeCS(Console& console)
 	}
 	else
 	{
+		PrintTableCS(console);
 		for (auto& v : vectorCS)
 		{
 			std::cout << "\n\nКомпрессорная станция под id " << v.id << " имеет общее количество цехов: " << v.countWorkShops << std::endl

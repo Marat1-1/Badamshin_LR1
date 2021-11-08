@@ -47,13 +47,13 @@ void Console::PrintErrorText(std::string textError)
 }
 
 // Изменение шрифта консоли
-void Console::ChangeConsoleFont()
+void Console::ChangeConsoleFont(size_t width, size_t height)
 {
 	CONSOLE_FONT_INFOEX cfi;
 	cfi.cbSize = sizeof(cfi);
 	cfi.nFont = 0;
-	cfi.dwFontSize.X = 0;
-	cfi.dwFontSize.Y = 20;
+	cfi.dwFontSize.X = width;
+	cfi.dwFontSize.Y = height;
 	cfi.FontWeight = FW_REGULAR;
 	SetCurrentConsoleFontEx(myHandle, FALSE, &cfi);
 }
