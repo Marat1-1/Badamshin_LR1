@@ -27,12 +27,18 @@
     <ClCompile Include="CompressorStationCollection.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="ClassElements.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="Verification.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClassElements.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="Verification_Class.h">
+    <ClInclude Include="Verification.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Console.h">

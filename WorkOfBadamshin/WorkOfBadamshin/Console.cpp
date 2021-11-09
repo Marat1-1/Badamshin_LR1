@@ -47,7 +47,7 @@ void Console::PrintErrorText(std::string textError)
 }
 
 // Изменение шрифта консоли
-void Console::ChangeConsoleFont(size_t width, size_t height)
+void Console::ChangeConsoleFont(short width, short height)
 {
 	CONSOLE_FONT_INFOEX cfi;
 	cfi.cbSize = sizeof(cfi);

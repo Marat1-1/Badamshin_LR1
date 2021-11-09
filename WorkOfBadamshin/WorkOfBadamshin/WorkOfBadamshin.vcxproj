@@ -139,9 +139,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ClassElements.cpp" />
     <ClCompile Include="CompressorStationCollection.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="PipeCollection.cpp" />
+    <ClCompile Include="Verification.cpp" />
     <ClCompile Include="WorkOfBadamshin.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -149,7 +151,7 @@
     <ClInclude Include="CompressorStationCollection.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="PipeCollection.h" />
-    <ClInclude Include="Verification_Class.h" />
+    <ClInclude Include="Verification.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

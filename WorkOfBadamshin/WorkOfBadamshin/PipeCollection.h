@@ -1,3 +1,4 @@
+#include <unordered_map>
 #include <vector>
 #include <fstream>
 #include "ClassElements.h"
@@ -9,18 +10,18 @@
 class PipeCollection
 {
 private:
-	std::vector<Pipe> vectorPipes;
+	std::unordered_map<size_t,Pipe> pipeCollection;
 	std::vector<size_t> vectorIdForFilter;
-	void PrintFilterTablePipes(Console&);
-	void FilterPipe(Console&);
+	void PrintFilterTablePipes();
+	void FilterPipe();
 public:
-	void AddPipe(Console&);
-	void ChangePipe(Console&);
-	void PrintTablePipes(Console&);
-	void SaveToFile(std::ofstream&, Console&);
-	void DownloadFromFile(std::ifstream&, Console&);
-	void DeletePipe(Console&);
-	void BatchChangePipe(Console&);
+	void AddPipe();
+	void ChangePipe();
+	void PrintTablePipes();
+	void SaveToFile(std::ofstream&);
+	void DownloadFromFile(std::ifstream&);
+	void DeletePipe();
+	void BatchChangePipe();
 };
 
 #endif // !PIPECOLLECTION_H

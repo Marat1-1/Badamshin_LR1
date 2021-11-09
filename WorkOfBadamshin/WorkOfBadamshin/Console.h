@@ -1,6 +1,5 @@
 #include <iostream>
 #include <Windows.h>
-#include "ClassElements.h"
 
 #ifndef CONSOLE_H
 #define CONSOLE_H
@@ -8,16 +7,15 @@
 class Console
 {
 private:
-	HANDLE myHandle;
+	static HANDLE& myHandle;
 public:
-	void PrintChar(char, size_t);
-	void PrintMenu();
-	void PrintTitleText(std::string);
-	void PrintErrorText(std::string);
-	void ChangeConsoleFont(size_t, size_t);
-	void SetRusLocale();
-	void SetTitleConsoleWindow();
-	Console(HANDLE& myHandle_) : myHandle(myHandle_) {};
+	static void PrintChar(char, size_t);
+	static void PrintMenu();
+	static void PrintTitleText(std::string);
+	static void PrintErrorText(std::string);
+	static void ChangeConsoleFont(short, short);
+	static void SetRusLocale();
+	static void SetTitleConsoleWindow();
 };
 
 #endif // !CONSOLE_H

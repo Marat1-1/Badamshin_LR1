@@ -1,54 +1,44 @@
 #include "CompressorStationCollection.h"
-#include "Verification_Class.h"
+#include "Verification.h"
 #include <iomanip>
 
-
-
 // Добавление компрессорной станции в список
-void CompressorStationCollection::AddCS(Console& console)
+void CompressorStationCollection::AddCS()
 {
-	VerificationClass<size_t> verification;
 	CompressorStation compressorStation;
-	compressorStation.id = CompressorStation::countCS;
-	compressorStation.name = verification.GetStringValue("Введите название КС (длина не больше 30 символов): ",
-		"Ошибка!!! Название не может состоять только из пробелов или пустой строки и иметь длину больше чем 30 символов!!!", 30, console);
-
-	compressorStation.countWorkShops = verification.GetNumericValue("Введите количество цехов КС (не больше 20): ",
-		"Ошибка!!! Количество цехов это целое число, без посторонних символов, в виде букв, точек и также число должно быть меньше 20.", 0, 20, console);
-
-	compressorStation.countWorkShopsInOperation = verification.GetNumericValue("Введите количество цехов в работе (оно не должно превышать общее количество цехов): ",
-		"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 0, compressorStation.countWorkShops, console);
-
-	compressorStation.effectiveness = verification.GetNumericValue("Введите значение эффективности КС (оно измеряется в процентах, поэтому введите число от 0 до 100%): ",
-			"Ошибка!!! Вы ввели что-то непонятное.\nЭффективность КС может быть целым числом лежащим в пределах от 0 до 100.\nПовторите ввод!!!", 0, 100, console);
-	
-	vectorCS.push_back(compressorStation);
+	csCollection.emplace(compressorStation.id, compressorStation);
 }
 
 
 // Редактирование компрессорной станции
-void CompressorStationCollection::ChangeCS(Console& console)
+void CompressorStationCollection::ChangeCS()
 {
-	VerificationClass<size_t> verification;
-	std::cout << "Всего добавлено компрессорных станций: " << CompressorStation::countCS << std::endl;
-	if (CompressorStation::countCS == 0)
+	size_t changeId;
+	bool query;
+	std::cout << "Всего добавлено компрессорных станций: " << size(csCollection) << std::endl
+		<< "Id доступные для редактирования: ";
+	for (const auto& el : csCollection)
+		std::cout << el.first << "  ";
+	std::cout << std::endl;
+	if (csCollection.empty())
 	{
-		console.PrintErrorText("Вы не добавили ни одной компрессорной станции, редактирование недоступно!");
-		verification.GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!", console);
+		Console::PrintErrorText("Вы не добавили ни одной компрессорной станции, редактирование недоступно!");
+		verification::GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
 		return;
 	}
 	while (true)
 	{
-		size_t localId = verification.GetNumericValue("\nВведите номер (id) компрессорной станции, которую вы бы хотели редактировать (id не должен превышать общее количество компрессорных станций): ",
-			"Вы ввели недопустимое значение, id трубы не должен превышать общее количество компрессорных станций, а также он является натуральным числом!!!",
-			1, CompressorStation::countCS, console);
-		std::cout << "Количество цехов у данной компрессорной станции: " << vectorCS[localId - 1].countWorkShops << std::endl;
-		std::cout << "Количество цехов в работе у данной компрессорной станции: " << vectorCS[localId - 1].countWorkShopsInOperation << std::endl;
-		vectorCS[localId - 1].countWorkShopsInOperation = verification.GetNumericValue("Введите новое количество цехов в работе (оно не должно превышать общее количество цехов): ",
-			"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.",
-			0, vectorCS[localId - 1].countWorkShops, console);
-		bool query = verification.GetBoolValue("\n\nХотите ли вы продолжить редактировать компрессоные станции, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
-			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!", console);
+		changeId = verification::GetNumericValue<size_t>("\nВведите номер (id) компрессорной станции, которую вы бы хотели редактировать: ",
+			"Ошибка! Вы ввели недопустимое значение, возможно вы ввели несуществующий id или же произвели некорректный ввод, помните id это положительное, целое число!!!",
+			1, CompressorStation::countCSCreated);
+		if (csCollection.find(changeId) != csCollection.end())
+		{
+			std::cout << "Количество цехов у данной компрессорной станции: " << csCollection[changeId].countWorkShops << std::endl;
+			std::cout << "Количество цехов в работе у данной компрессорной станции: " << csCollection[changeId].countWorkShopsInOperation << std::endl;
+			csCollection[changeId].ChangeCS();
+		}
+		query = verification::GetBoolValue("\n\nХотите ли вы продолжить редактировать компрессоные станции, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
+			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!");
 		if (query != true)
 			break;
 	}
@@ -56,64 +46,64 @@ void CompressorStationCollection::ChangeCS(Console& console)
 
 
 // Вывод таблицы компрессорных станций на экран
-void CompressorStationCollection::PrintTableCS(Console& console)
+void CompressorStationCollection::PrintTableCS()
 {
 	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 172;
-	console.PrintTitleText("\n\t\t\t\tТаблица КС");
-	console.PrintChar('-', tableWidth);
+	Console::PrintTitleText("\n\t\t\t\tТаблица КС");
+	Console::PrintChar('-', tableWidth);
 	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30 + 1) << "NAME" << std::setw(tabulation_30) << "CountWorkShops" << std::setw(tabulation_30 + 10) << "CountWorkShopsInOperation" << std::setw(tabulation_30) << "EFFECTIVENESS" << std::setw(tabulation_20) << "|" << std::endl;
-	console.PrintChar('-', tableWidth);
-	for (const auto& cs : vectorCS)
+	Console::PrintChar('-', tableWidth);
+	for (const auto& cs : csCollection)
 	{
-		std::cout << "|" << std::setw(tabulation_20) << cs.id << std::setw(tabulation_30 + 1) << cs.name << std::setw(tabulation_30) << cs.countWorkShops << std::setw(tabulation_30 + 10) << cs.countWorkShopsInOperation << std::setw(tabulation_30) << cs.effectiveness << std::setw(tabulation_20) << "|" << std::endl;
+		std::cout << "|" << std::setw(tabulation_20) << cs.second.id << std::setw(tabulation_30 + 1) << cs.second.name << std::setw(tabulation_30) << cs.second.countWorkShops << std::setw(tabulation_30 + 10) << cs.second.countWorkShopsInOperation << std::setw(tabulation_30) << cs.second.effectiveness << std::setw(tabulation_20) << "|" << std::endl;
 	}
-	console.PrintChar('-', tableWidth);
+	Console::PrintChar('-', tableWidth);
 }
 
 // Вывод таблицы компрессорных станций на экран, при этом функция вывод любой вектор КС
-void CompressorStationCollection::PrintFilterTableCS(Console& console)
+void CompressorStationCollection::PrintFilterTableCS()
 {
 	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 172;
-	console.PrintTitleText("\n\t\t\t\tТаблица КС");
-	console.PrintChar('-', tableWidth);
+	Console::PrintTitleText("\n\t\t\t\tТаблица КС");
+	Console::PrintChar('-', tableWidth);
 	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30 + 1) << "NAME" << std::setw(tabulation_30) << "CountWorkShops" << std::setw(tabulation_30 + 10) << "CountWorkShopsInOperation" << std::setw(tabulation_30) << "EFFECTIVENESS" << std::setw(tabulation_20) << "|" << std::endl;
-	console.PrintChar('-', tableWidth);
+	Console::PrintChar('-', tableWidth);
 	for (const auto& id : vectorIdForFilter)
 	{
-		std::cout << "|" << std::setw(tabulation_20) << vectorCS[id - 1].id << std::setw(tabulation_30 + 1) << vectorCS[id - 1].name << std::setw(tabulation_30) << vectorCS[id - 1].countWorkShops << std::setw(tabulation_30 + 10) << vectorCS[id - 1].countWorkShopsInOperation << std::setw(tabulation_30) << vectorCS[id - 1].effectiveness << std::setw(tabulation_20) << "|" << std::endl;
+		std::cout << "|" << std::setw(tabulation_20) << csCollection[id].id << std::setw(tabulation_30 + 1) << csCollection[id].name << std::setw(tabulation_30) << csCollection[id].countWorkShops << std::setw(tabulation_30 + 10) << csCollection[id].countWorkShopsInOperation << std::setw(tabulation_30) << csCollection[id].effectiveness << std::setw(tabulation_20) << "|" << std::endl;
 	}
-	console.PrintChar('-', tableWidth);
+	Console::PrintChar('-', tableWidth);
 }
 
 // Вывод компрессорных станций в файл
-void CompressorStationCollection::SaveToFile(std::ofstream& fout, Console& console)
+void CompressorStationCollection::SaveToFile(std::ofstream& fout)
 {
 	size_t percent = 0;
+	if (csCollection.empty())
+	{
+		Console::PrintErrorText("Вы не добавили ни одной компрессорной станции!");
+		return;
+	}
 	if (fout.is_open())
 	{
-		for (const auto& v : vectorCS)
-		{
-			fout << v.name << std::endl
-				<< v.countWorkShops << std::endl
-				<< v.countWorkShopsInOperation << std::endl
-				<< v.effectiveness << std::endl;
-		}
+		for (auto& el : csCollection)
+			el.second.SaveToFile(fout);
 		while (percent <= 100)
 		{
 			std::cout << "\t\t" << "Сохранение КС: " << percent++ << "%";
 			std::cout << '\r';
 			Sleep(20);
 		}
-		console.PrintTitleText("\n\t\tКС сохранены!");
+		Console::PrintTitleText("\n\t\tКС сохранены!");
 	}
 	else
 	{
-		console.PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
+		Console::PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
 	}
 }
 
 // Загрузка КС из файла
-void CompressorStationCollection::DownloadFromFile(std::ifstream& fin, Console& console)
+void CompressorStationCollection::DownloadFromFile(std::ifstream& fin)
 {
 	size_t percent = 0;
 	if (fin.is_open())
@@ -122,13 +112,8 @@ void CompressorStationCollection::DownloadFromFile(std::ifstream& fin, Console& 
 		{
 			while (fin.peek() != ' ' && fin.peek() != -1)
 			{
-				CompressorStation newCS;
-				newCS.id = CompressorStation::countCS;
-				getline(fin, newCS.name);
-				fin >> newCS.countWorkShops
-					>> newCS.countWorkShopsInOperation
-					>> newCS.effectiveness;
-				vectorCS.push_back(newCS);
+				CompressorStation compressorStation(fin);
+				csCollection.emplace(compressorStation.id, compressorStation);
 				fin.ignore(1000, '\n');
 			}
 			while (percent <= 100)
@@ -137,57 +122,22 @@ void CompressorStationCollection::DownloadFromFile(std::ifstream& fin, Console& 
 				std::cout << '\r';
 				Sleep(20);
 			}
-			console.PrintTitleText("\nКС загружены!");
+			Console::PrintTitleText("\nКС загружены!");
 		}
 		else
 		{
-			console.PrintErrorText("\nНельзя загружать данные из пустого файла, сначала нужно сохранить там данные!!!");
+			Console::PrintErrorText("\nНельзя загружать данные из пустого файла, сначала нужно сохранить там данные!!!");
 		}
 	}
 	else
 	{
-		console.PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
-	}
-}
-
-
-// Удаление КС
-void CompressorStationCollection::DeleteCS(Console& console)
-{
-	VerificationClass<size_t> verification;
-	size_t delId; // id кс, которую нужно удалить
-	const size_t& id = delId; // константная ссылка на id, чтобы работать с итератором
-	bool query;
-	std::vector<CompressorStation>::iterator it = vectorCS.begin();
-	if (CompressorStation::countCS == 0)
-	{
-		console.PrintErrorText("Вы не добавили ни одну КС, удаление недоступно!");
-		verification.GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!", console);
-		return;
-	}
-	while (true)
-	{
-		std::cout << "\n\nВсего труб: " << CompressorStation::countCS << std::endl;
-		delId = verification.GetNumericValue("Введите id КС, которую вы бы хотели удалить (id не должен превышать общее количество КС): ",
-			"Вы ввели недопустимое значение, id КС не должен превышать общее количество КС, а также id это натуральное число!!!", 1, CompressorStation::countCS, console);
-		it += id - 1;
-		CompressorStation::countCS--;
-		for (auto iter = vectorCS.erase(it); iter != vectorCS.end(); iter++)
-		{
-			(*iter).id--;
-		}
-		console.PrintTitleText("КС была успешно удалена!");
-		query = verification.GetBoolValue("\n\nХотите ли вы продолжить удалять КС, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
-			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!", console);
-		if (!query)
-			break;
+		Console::PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
 	}
 }
 
 // Фильтр КС
-void CompressorStationCollection::FilterCS(Console& console)
+void CompressorStationCollection::FilterCS()
 {
-	VerificationClass<size_t> verification;
 	char command;
 	std::cout << "\n\nВыберите пункт меню для фильтрации:" << std::endl
 		<< "1. Отфильтровать по названию" << std::endl
@@ -202,25 +152,25 @@ void CompressorStationCollection::FilterCS(Console& console)
 		case '1':
 		{
 			std::string nameCS;
-			nameCS = verification.GetStringValue("\nВведите название КС, по которому вы хотите отфильтровать данные (длина не больше 30 символов): ",
-				"Ошибка!!! Название не может состоять только из пробелов или пустой строки и иметь длину больше чем 30 символов!!!", 30, console);
-			for (const auto& v : vectorCS)
-				if (v.name == nameCS)
-					vectorIdForFilter.push_back(v.id);
+			nameCS = verification::GetStringValue("\nВведите название КС, по которому вы хотите отфильтровать данные (длина не больше 30 символов): ",
+				"Ошибка!!! Название не может состоять только из пробелов или пустой строки и иметь длину больше чем 30 символов!!!", 30);
+			for (const auto& el : csCollection)
+				if (el.second.name == nameCS)
+					vectorIdForFilter.push_back(el.first);
 			return;
 		}
 		case '2':
 		{
 			size_t lowPercent, upPercent, percent;
-			lowPercent = verification.GetNumericValue("\nВведите нижнюю границу фильтра процента незадейстованных цехов у КС (число целое от 0 до 100): ",
-				"Ошибка!!! Вы осуществили неправильный ввод, повторите его по выше указанным правилам.", 0, 100, console);
-			upPercent = verification.GetNumericValue("\nВведите верхнюю границу фильтра процента незадейстованных цехов у КС (число целое от нижней границы до 100): ",
-				"Ошибка!!! Вы осуществили неправильный ввод, повторите его по выше указанным правилам.", lowPercent, 100, console);
-			for (const auto& v : vectorCS)
+			lowPercent = verification::GetNumericValue<size_t>("\nВведите нижнюю границу фильтра процента незадейстованных цехов у КС (число целое от 0 до 100): ",
+				"Ошибка!!! Вы осуществили неправильный ввод, повторите его по выше указанным правилам.", 0, 100);
+			upPercent = verification::GetNumericValue<size_t>("\nВведите верхнюю границу фильтра процента незадейстованных цехов у КС (число целое от нижней границы до 100): ",
+				"Ошибка!!! Вы осуществили неправильный ввод, повторите его по выше указанным правилам.", lowPercent, 100);
+			for (const auto& el : csCollection)
 			{
-				percent = static_cast<size_t>(round((static_cast<double>(v.countWorkShops) - v.countWorkShopsInOperation) / v.countWorkShops * 100));
+				percent = static_cast<size_t>(round((static_cast<double>(el.second.countWorkShops) - el.second.countWorkShopsInOperation) / el.second.countWorkShops * 100));
 				if (percent >= lowPercent && percent <= upPercent)
-					vectorIdForFilter.push_back(v.id);
+					vectorIdForFilter.push_back(el.first);
 			}
 			return;
 		}
@@ -228,71 +178,126 @@ void CompressorStationCollection::FilterCS(Console& console)
 		{
 			std::string nameCS;
 			size_t lowPercent, upPercent, percent;
-			nameCS = verification.GetStringValue("\nВведите название КС, по которому вы хотите отфильтровать данные (длина не больше 30 символов): ",
-				"Ошибка!!! Название не может состоять только из пробелов или пустой строки и иметь длину больше чем 30 символов!!!", 30, console);
-			lowPercent = verification.GetNumericValue("\nВведите нижнюю границу фильтра процента незадейстованных цехов у КС (число целое от 0 до 100): ",
-				"Ошибка!!! Вы осуществили неправильный ввод, повторите его по выше указанным правилам.", 0, 100, console);
-			upPercent = verification.GetNumericValue("\nВведите верхнюю границу фильтра процента незадейстованных цехов у КС (число целое от нижней границы до 100): ",
-				"Ошибка!!! Вы осуществили неправильный ввод, повторите его по выше указанным правилам.", lowPercent, 100, console);
-			for (const auto& v : vectorCS)
+			nameCS = verification::GetStringValue("\nВведите название КС, по которому вы хотите отфильтровать данные (длина не больше 30 символов): ",
+				"Ошибка!!! Название не может состоять только из пробелов или пустой строки и иметь длину больше чем 30 символов!!!", 30);
+			lowPercent = verification::GetNumericValue<size_t>("\nВведите нижнюю границу фильтра процента незадейстованных цехов у КС (число целое от 0 до 100): ",
+				"Ошибка!!! Вы осуществили неправильный ввод, повторите его по выше указанным правилам.", 0, 100);
+			upPercent = verification::GetNumericValue<size_t>("\nВведите верхнюю границу фильтра процента незадейстованных цехов у КС (число целое от нижней границы до 100): ",
+				"Ошибка!!! Вы осуществили неправильный ввод, повторите его по выше указанным правилам.", lowPercent, 100);
+			for (const auto& el : csCollection)
 			{
-				percent = static_cast<size_t>(round((static_cast<double>(v.countWorkShops) - v.countWorkShopsInOperation) / v.countWorkShops * 100));
-				if (v.name == nameCS && percent >= lowPercent && percent <= upPercent)
-					vectorIdForFilter.push_back(v.id);
+				percent = static_cast<size_t>(round((static_cast<double>(el.second.countWorkShops) - el.second.countWorkShopsInOperation) / el.second.countWorkShops * 100));
+				if (el.second.name == nameCS && percent >= lowPercent && percent <= upPercent)
+					vectorIdForFilter.push_back(el.first);
 			}
 			return;
 		}
 		default:
 		{
-			console.PrintErrorText("\nТакой команды нету в списке, приведённом выше, повторите ввод!!!\n");
+			Console::PrintErrorText("\nТакой команды нету в списке, приведённом выше, повторите ввод!!!\n");
 			break;
 		}
 		}
 	}
 }
 
-// Пакетное редактирование КС
-void CompressorStationCollection::BatchChangeCS(Console& console)
+// Удаление КС
+void CompressorStationCollection::DeleteCS()
 {
-	VerificationClass<size_t> verification;
+	size_t delId; // id кс, которую нужно удалить
 	bool query;
-	if (CompressorStation::countCS == 0)
+	if (csCollection.empty())
 	{
-		console.PrintErrorText("\nВы не добавили ни одной КС, пакетное редактирование недоступно!");
-		verification.GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!", console);
+		Console::PrintErrorText("Вы не добавили ни одну КС, удаление недоступно!");
+		verification::GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
 		return;
 	}
-	query = verification.GetBoolValue("\nНажмите на \"y\", если хотите редактировать все КС, на \"n\", если только определённое подмножество: ",
-		"\nОшибка!!! Вы нажали на некорректную кнопку, осуществите ввод по указанным вам правилам!!!", console);
-	if (!query)
+	query = verification::GetBoolValue("\nНажмите на \"y\", если хотите произвести удаление по одной КС, на \"n\", если хотите произвести пакетное удаление по фильтру: ",
+		"\nНеизвестная команда! Повторите ввод по указанным правилам!!!");
+	if (query)
 	{
-		FilterCS(console);
-		if (size(vectorIdForFilter) != 0)
+		while (true)
 		{
-			PrintFilterTableCS(console);
-			for (const auto& p : vectorIdForFilter)
+			std::cout << "\n\nВсего КС: " << size(csCollection) << std::endl
+				<< "Id доступные для удаления: ";
+			for (const auto& el : csCollection)
+				std::cout << el.first << "  ";
+			std::cout << std::endl;
+			delId = verification::GetNumericValue<size_t>("Введите id КС, которую вы бы хотели удалить: ",
+				"Ошибка! Вы ввели недопустимое значение, возможно вы ввели несуществующий id или же произвели некорректный ввод, помните id это положительное, целое число!!!", 1, CompressorStation::countCSCreated);
+			if (csCollection.find(delId) != csCollection.end())
 			{
-				std::cout << "\n\nКомпрессорная станция под id " << p << " имеет общее количество цехов: " << vectorCS[p - 1].countWorkShops << std::endl
-					<< "Количество цехов в работе: " << vectorCS[p - 1].countWorkShopsInOperation << std::endl;
-				vectorCS[p-1].countWorkShopsInOperation = verification.GetNumericValue("Введите новое количество цехов в работе для данной КС (оно не должно превышать общее количество цехов): ",
-					"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 0, vectorCS[p-1].countWorkShops, console);
+				csCollection.erase(delId);
+				Console::PrintTitleText("КС была успешно удалена!");
 			}
-			console.PrintTitleText("\n\nКС отредактированы!");
+			else
+				Console::PrintErrorText("По указанному id не было найдено ни одной КС, возможно КС уже была удалена!!!");
+			query = verification::GetBoolValue("\n\nХотите ли вы продолжить удалять КС, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
+				"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!");
+			if (!query)
+				break;
 		}
-		else
-			console.PrintErrorText("\nПо вашему фильтру не было найдено ни одной трубы!");
 	}
 	else
 	{
-		PrintTableCS(console);
-		for (auto& v : vectorCS)
+		FilterCS();
+		if (size(vectorIdForFilter) != 0)
 		{
-			std::cout << "\n\nКомпрессорная станция под id " << v.id << " имеет общее количество цехов: " << v.countWorkShops << std::endl
-				<< "Количество цехов в работе: " << v.countWorkShopsInOperation << std::endl;
-			v.countWorkShopsInOperation = verification.GetNumericValue("Введите новое количество цехов в работе для данной КС (оно не должно превышать общее количество цехов): ",
-				"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 0, v.countWorkShops, console);
+			std::cout << "\n\nБудут удалены следующие КС:" << std::endl;
+			PrintFilterTableCS();
+			for (const auto i : vectorIdForFilter)
+				csCollection.erase(i);
+			vectorIdForFilter.clear();
+			Console::PrintTitleText("\n\nКС Успешно удалены!");
 		}
-		console.PrintTitleText("\n\nКС отредактированы!");
+		else
+			Console::PrintErrorText("\nПо вашему фильтру не было найдено ни одной КС!");
+	}
+	std::cout << std::endl;
+	system("pause");
+}
+
+// Пакетное редактирование КС
+void CompressorStationCollection::BatchChangeCS()
+{
+	bool query;
+	if (csCollection.empty())
+	{
+		Console::PrintErrorText("\nВы не добавили ни одной КС, пакетное редактирование недоступно!");
+		verification::GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
+		return;
+	}
+	query = verification::GetBoolValue("\nНажмите на \"y\", если хотите редактировать все КС, на \"n\", если только определённое подмножество: ",
+		"\nОшибка!!! Вы нажали на некорректную кнопку, осуществите ввод по указанным вам правилам!!!");
+	if (!query)
+	{
+		FilterCS();
+		if (size(vectorIdForFilter) != 0)
+		{
+			PrintFilterTableCS();
+			for (const auto& i : vectorIdForFilter)
+			{
+				std::cout << "\n\nКомпрессорная станция под id " << csCollection[i].id << " имеет общее количество цехов: " << csCollection[i].countWorkShops << std::endl
+					<< "Количество цехов в работе: " << csCollection[i].countWorkShopsInOperation << std::endl;
+				csCollection[i].countWorkShopsInOperation = verification::GetNumericValue<size_t>("Введите новое количество цехов в работе для данной КС (оно не должно превышать общее количество цехов): ",
+					"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 0, csCollection[i].countWorkShops);
+			}
+			Console::PrintTitleText("\n\nКС отредактированы!");
+		}
+		else
+			Console::PrintErrorText("\nПо вашему фильтру не было найдено ни одной трубы!");
+	}
+	else
+	{
+		PrintTableCS();
+		for (auto& el : csCollection)
+		{
+			std::cout << "\n\nКомпрессорная станция под id " << el.first << " имеет общее количество цехов: " << el.second.countWorkShops << std::endl
+				<< "Количество цехов в работе: " << el.second.countWorkShopsInOperation << std::endl;
+			el.second.countWorkShopsInOperation = verification::GetNumericValue<size_t>("Введите новое количество цехов в работе для данной КС (оно не должно превышать общее количество цехов): ",
+				"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 0, el.second.countWorkShops);
+		}
+		Console::PrintTitleText("\n\nКС отредактированы!");
 	}
 	vectorIdForFilter.clear();
 	system("pause");

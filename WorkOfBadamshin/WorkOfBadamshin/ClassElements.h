@@ -1,22 +1,23 @@
 #include <string>
+#include <fstream>
 
-#ifndef WORKOFBADAMSHIN_H
-#define WORKOFBADAMSHIN_H
+#ifndef CLASSELEMENTS_H
+#define CLASSELEMENTS_H
 
 // Структура Трубы
 class Pipe
 {
 private:
-	int id;
-	static size_t countPipes;
+	size_t id;
+	static size_t countPipesCreated; // количество созданных элементов за всё время
 public:
 	double length;
 	double diameter;
 	bool repair;
-	Pipe()
-	{
-		countPipes++;
-	}
+	Pipe(); // в конструкторе идёт работа с пользователем, запрашиваются данные на ввод
+	Pipe(std::ifstream&); // Конструктор для считывания из файла
+	void GhangePipe();
+	void SaveToFile(std::ofstream&);
 	friend class PipeCollection;
 };
 
@@ -24,18 +25,18 @@ public:
 class CompressorStation
 {
 private:
-	int id;
-	static size_t countCS;
+	size_t id;
+	static size_t countCSCreated; // количество созданных элементов за всё время
 public:
 	std::string name;
 	size_t countWorkShops;
 	size_t countWorkShopsInOperation;
 	size_t effectiveness;
-	CompressorStation()
-	{
-		countCS++;
-	}
+	CompressorStation(); // в конструкторе идёт работа с пользователем, запрашиваются данные на ввод
+	CompressorStation(std::ifstream&);
+	void ChangeCS();
+	void SaveToFile(std::ofstream&);
 	friend class CompressorStationCollection;
 };
 
-#endif // !WORKOFBADAMSHIN_H
+#endif // !CLASSELEMENTS_H
