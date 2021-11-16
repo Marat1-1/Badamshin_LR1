@@ -6,8 +6,8 @@
 // Инициализация трубы
 Pipe::Pipe()
 {
-	countPipesCreated++;
-	this->id = countPipesCreated;
+	maxIdPipe++;
+	this->id = maxIdPipe;
 	this->length = verification::GetNumericValue<double>("Введите длину трубы, размерность - километры, диапазон от 10 до 100 км (необязательно целое число, чтобы отделить дробную часть используйте \".\"): ",
 		"Ошибка!!! Вы ввели что-то непонятное.\nДлина трубы может быть либо целым числом, либо числом с плавающей точкой, лежащим в диапазоне от 10 до 100 км, повторите ввод!!!", 10.0, 100.0);
 
@@ -21,16 +21,14 @@ Pipe::Pipe()
 // Считывание из файла
 Pipe::Pipe(std::ifstream& fin)
 {
-	countPipesCreated++;
-	this->id = countPipesCreated;
-	fin >> this->length >> this->diameter >> this->repair;
+	fin >> this->id >> this->length >> this->diameter >> this->repair;
 }
 
 // Инициализация КС
 CompressorStation::CompressorStation()
 {
-	countCSCreated++;
-	this->id = countCSCreated;
+	maxIdCS++;
+	this->id = maxIdCS;
 	this->name = verification::GetStringValue("Введите название КС (длина не больше 30 символов): ",
 		"Ошибка!!! Название не может состоять только из пробелов или пустой строки и иметь длину больше чем 30 символов!!!", 30);
 
@@ -47,8 +45,8 @@ CompressorStation::CompressorStation()
 // Считывание из файла
 CompressorStation::CompressorStation(std::ifstream& fin)
 {
-	countCSCreated++;
-	this->id = countCSCreated;
+	fin >> this->id;
+	fin.ignore(10000, '\n');
 	getline(fin, this->name);
 	fin >> this->countWorkShops
 		>> this->countWorkShopsInOperation
@@ -73,7 +71,8 @@ void CompressorStation::ChangeCS()
 // Сохранение Трубы в файл
 void Pipe::SaveToFile(std::ofstream& fout)
 {
-	fout << length << std::endl
+	fout << id << std::endl
+		<< length << std::endl
 		<< diameter << std::endl
 		<< repair << std::endl;
 }
@@ -81,7 +80,8 @@ void Pipe::SaveToFile(std::ofstream& fout)
 // Сохранение КС в файл
 void CompressorStation::SaveToFile(std::ofstream& fout)
 {
-	fout << name << std::endl
+	fout << id << std::endl 
+		<< name << std::endl
 		<< countWorkShops << std::endl
 		<< countWorkShopsInOperation << std::endl
 		<< effectiveness << std::endl;

@@ -7,8 +7,8 @@
 #include "Verification.h"
 
 // Объявляю счётчики труб и компрессорных станций
-size_t Pipe::countPipesCreated = 0;
-size_t CompressorStation::countCSCreated = 0;
+size_t Pipe::maxIdPipe = 0;
+size_t CompressorStation::maxIdCS = 0;
 HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE); // для работы с консолью
 HANDLE& Console::myHandle = handle;
 
@@ -70,9 +70,14 @@ int main()
 			std::string fileName = verification::GetStringValue("Введите имя файла, в который вы хотели бы сохранить данные (.txt, максимум 30 символов): ",
 				"Ошибка!!! Название файла не может состоять только из пробелов или пустой строки и иметь длину больше чем 30 символов!!!", 30);
 			std::ofstream fout(fileName);
-			newPipeCollection.SaveToFile(fout);
-			fout << ' ' << std::endl;
-			newCSColletion.SaveToFile(fout);
+			if (fout.is_open())
+			{
+				newPipeCollection.SaveToFile(fout);
+				fout << ' ' << std::endl;
+				newCSColletion.SaveToFile(fout);
+			}
+			else
+				Console::PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
 			fout.close();
 			verification::GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
 			break;
@@ -84,9 +89,14 @@ int main()
 			std::string fileName = verification::GetStringValue("Введите имя файла, в который вы хотели бы сохранить данные (.txt, максимум 30 символов): ",
 				"Ошибка!!! Название файла не может состоять только из пробелов или пустой строки и иметь длину больше чем 30 символов!!!", 30);
 			std::ifstream fin(fileName);
-			newPipeCollection.DownloadFromFile(fin);
-			fin.ignore(10000, '\n');
-			newCSColletion.DownloadFromFile(fin);
+			if (fin.is_open())
+			{
+				newPipeCollection.DownloadFromFile(fin);
+				fin.ignore(10000, '\n');
+				newCSColletion.DownloadFromFile(fin);
+			}
+			else
+				Console::PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
 			fin.close();
 			system("pause");
 			break;

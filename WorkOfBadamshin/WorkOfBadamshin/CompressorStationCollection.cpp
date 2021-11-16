@@ -30,7 +30,7 @@ void CompressorStationCollection::ChangeCS()
 	{
 		changeId = verification::GetNumericValue<size_t>("\nВведите номер (id) компрессорной станции, которую вы бы хотели редактировать: ",
 			"Ошибка! Вы ввели недопустимое значение, возможно вы ввели несуществующий id или же произвели некорректный ввод, помните id это положительное, целое число!!!",
-			1, CompressorStation::countCSCreated);
+			1, CompressorStation::maxIdCS);
 		if (csCollection.find(changeId) != csCollection.end())
 		{
 			std::cout << "Количество цехов у данной компрессорной станции: " << csCollection[changeId].countWorkShops << std::endl;
@@ -84,54 +84,42 @@ void CompressorStationCollection::SaveToFile(std::ofstream& fout)
 		Console::PrintErrorText("Вы не добавили ни одной компрессорной станции!");
 		return;
 	}
-	if (fout.is_open())
-	{
-		for (auto& el : csCollection)
+	fout << CompressorStation::maxIdCS << std::endl;
+	for (auto& el : csCollection)
 			el.second.SaveToFile(fout);
-		while (percent <= 100)
-		{
-			std::cout << "\t\t" << "Сохранение КС: " << percent++ << "%";
-			std::cout << '\r';
-			Sleep(20);
-		}
-		Console::PrintTitleText("\n\t\tКС сохранены!");
-	}
-	else
+	while (percent <= 100)
 	{
-		Console::PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
+		std::cout << "\t\t" << "Сохранение КС: " << percent++ << "%";
+		std::cout << '\r';
+		Sleep(20);
 	}
+	Console::PrintTitleText("\n\t\tКС сохранены!");
 }
 
 // Загрузка КС из файла
 void CompressorStationCollection::DownloadFromFile(std::ifstream& fin)
 {
 	size_t percent = 0;
-	if (fin.is_open())
+	if (fin.peek() != -1)
 	{
-		if (fin.peek() != -1)
+		fin >> CompressorStation::maxIdCS;
+		while (fin.peek() != ' ' && fin.peek() != -1)
 		{
-			while (fin.peek() != ' ' && fin.peek() != -1)
-			{
-				CompressorStation compressorStation(fin);
-				csCollection.emplace(compressorStation.id, compressorStation);
-				fin.ignore(1000, '\n');
-			}
-			while (percent <= 100)
-			{
-				std::cout << "\t\t" << "Загрузка КС: " << percent++ << "%";
-				std::cout << '\r';
-				Sleep(20);
-			}
-			Console::PrintTitleText("\nКС загружены!");
+			CompressorStation compressorStation(fin);
+			csCollection.emplace(compressorStation.id, compressorStation);
+			fin.ignore(1000, '\n');
 		}
-		else
+		while (percent <= 100)
 		{
-			Console::PrintErrorText("\nНельзя загружать данные из пустого файла, сначала нужно сохранить там данные!!!");
+			std::cout << "\t\t" << "Загрузка КС: " << percent++ << "%";
+			std::cout << '\r';
+			Sleep(20);
 		}
+		Console::PrintTitleText("\nКС загружены!");
 	}
 	else
 	{
-		Console::PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
+		Console::PrintErrorText("\nНельзя загружать данные из пустого файла, сначала нужно сохранить там данные!!!");
 	}
 }
 
@@ -224,7 +212,7 @@ void CompressorStationCollection::DeleteCS()
 				std::cout << el.first << "  ";
 			std::cout << std::endl;
 			delId = verification::GetNumericValue<size_t>("Введите id КС, которую вы бы хотели удалить: ",
-				"Ошибка! Вы ввели недопустимое значение, возможно вы ввели несуществующий id или же произвели некорректный ввод, помните id это положительное, целое число!!!", 1, CompressorStation::countCSCreated);
+				"Ошибка! Вы ввели недопустимое значение, возможно вы ввели несуществующий id или же произвели некорректный ввод, помните id это положительное, целое число!!!", 1, CompressorStation::maxIdCS);
 			if (csCollection.find(delId) != csCollection.end())
 			{
 				csCollection.erase(delId);

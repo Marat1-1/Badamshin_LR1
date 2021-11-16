@@ -28,7 +28,7 @@ void PipeCollection::ChangePipe()
 	while (true)
 	{
 		changeId = verification::GetNumericValue<size_t>("\nВведите номер id трубы, которую вы бы хотели редактировать: ",
-			"Ошибка! Вы ввели недопустимое значение, возможно вы ввели несуществующий id или же произвели некорректный ввод, помните id это положительное, целое число!!!", 1, Pipe::countPipesCreated);
+			"Ошибка! Вы ввели недопустимое значение, возможно вы ввели несуществующий id или же произвели некорректный ввод, помните id это положительное, целое число!!!", 1, Pipe::maxIdPipe);
 		if (pipeCollection.find(changeId) != pipeCollection.end())
 		{
 			std::cout << "Изначальное состояние трубы: "
@@ -84,55 +84,42 @@ void PipeCollection::SaveToFile(std::ofstream& fout)
 		Console::PrintErrorText("Вы не добавили ни одной трубы!");
 		return;
 	}
-	if (fout.is_open())
+	fout << Pipe::maxIdPipe << std::endl;
+	for (auto& el : pipeCollection)
+		el.second.SaveToFile(fout);
+	while (percent <= 100)
 	{
-		for (auto& el : pipeCollection)
-			el.second.SaveToFile(fout);
-		while (percent <= 100)
-		{
-			std::cout << "\t\t" << "Сохранение КС: " << percent++ << "%";
-			std::cout << '\r';
-			Sleep(20);
-		}
-		Console::PrintTitleText("\n\t\tТрубы сохранены!");
+		std::cout << "\t\t" << "Сохранение КС: " << percent++ << "%";
+		std::cout << '\r';
+		Sleep(20);
 	}
-	else
-	{
-		Console::PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
-		Sleep(3000);
-	}
+	Console::PrintTitleText("\n\t\tТрубы сохранены!");
 }
 
 // Загрузка труб из файла
 void PipeCollection::DownloadFromFile(std::ifstream& fin)
 {
 	size_t percent = 0;
-	if (fin.is_open())
+	if (fin.peek() != -1)
 	{
-		if (fin.peek() != -1)
+		fin >> Pipe::maxIdPipe;
+		while (fin.peek() != ' ' && fin.peek() != -1)
 		{
-			while (fin.peek() != ' ' && fin.peek() != -1)
-			{
-				Pipe pipe(fin);
-				pipeCollection.emplace(pipe.id, pipe);
-				fin.ignore(1000, '\n');
-			}
-			while (percent <= 100)
-			{
-				std::cout << "\t\t" << "Загрузка труб: " << percent++ << "%";
-				std::cout << '\r';
-				Sleep(20);
-			}
-			Console::PrintTitleText("\nТрубы загружены!");
+			Pipe pipe(fin);
+			pipeCollection.emplace(pipe.id, pipe);
+			fin.ignore(1000, '\n');
 		}
-		else
+		while (percent <= 100)
 		{
-			Console::PrintErrorText("\nНельзя загружать данные из пустого файла, сначала нужно сохранить там данные!!!");
+			std::cout << "\t\t" << "Загрузка труб: " << percent++ << "%";
+			std::cout << '\r';
+			Sleep(20);
 		}
+		Console::PrintTitleText("\nТрубы загружены!");
 	}
 	else
 	{
-		Console::PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
+		Console::PrintErrorText("\nНельзя загружать данные из пустого файла, сначала нужно сохранить там данные!!!");
 	}
 }
 
@@ -170,7 +157,7 @@ void PipeCollection::DeletePipe()
 				std::cout << el.first << "  ";
 			std::cout << std::endl;
 			delId = verification::GetNumericValue<size_t>("Введите id трубы, которую вы бы хотели удалить: ",
-				"Ошибка! Вы ввели недопустимое значение, возможно вы ввели несуществующий id или же произвели некорректный ввод, помните id это положительное, целое число!!!", 1, Pipe::countPipesCreated);
+				"Ошибка! Вы ввели недопустимое значение, возможно вы ввели несуществующий id или же произвели некорректный ввод, помните id это положительное, целое число!!!", 1, Pipe::maxIdPipe);
 			if (pipeCollection.find(delId) != pipeCollection.end())
 			{
 				pipeCollection.erase(delId);

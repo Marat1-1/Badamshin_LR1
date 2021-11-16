@@ -9,7 +9,7 @@ class Pipe
 {
 private:
 	size_t id;
-	static size_t countPipesCreated; // количество созданных элементов за всё время
+	static size_t maxIdPipe; // количество созданных элементов за всё время
 public:
 	double length;
 	double diameter;
@@ -26,7 +26,7 @@ class CompressorStation
 {
 private:
 	size_t id;
-	static size_t countCSCreated; // количество созданных элементов за всё время
+	static size_t maxIdCS; // количество созданных элементов за всё время
 public:
 	std::string name;
 	size_t countWorkShops;
