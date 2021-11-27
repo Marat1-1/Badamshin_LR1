@@ -5,7 +5,7 @@
 bool verification::CheckCountSpace(std::string str)
 {
 	int i = 0;
-	while (i != size(str))
+	while (i != str.size())
 	{
 		if (str[i] != ' ')
 			return true;

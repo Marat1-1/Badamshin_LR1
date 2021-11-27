@@ -1,16 +1,9 @@
 ﻿#include <ctime>
-#include "ClassElements.h"
 #include <conio.h>
 #include "Console.h"
 #include "PipeCollection.h"
 #include "CompressorStationCollection.h"
 #include "Verification.h"
-
-// Объявляю счётчики труб и компрессорных станций
-size_t Pipe::maxIdPipe = 0;
-size_t CompressorStation::maxIdCS = 0;
-HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE); // для работы с консолью
-HANDLE& Console::myHandle = handle;
 
 // Точка входа в программу
 int main()
@@ -91,9 +84,16 @@ int main()
 			std::ifstream fin(fileName);
 			if (fin.is_open())
 			{
-				newPipeCollection.DownloadFromFile(fin);
-				fin.ignore(10000, '\n');
-				newCSColletion.DownloadFromFile(fin);
+				if (fin.peek() != -1)
+				{
+					newPipeCollection.DownloadFromFile(fin);
+					fin.ignore(10000, '\n');
+					newCSColletion.DownloadFromFile(fin);
+				}
+				else
+				{
+					Console::PrintErrorText("\nНельзя загружать данные из пустого файла, сначала нужно сохранить там данные!!!");
+				}
 			}
 			else
 				Console::PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");

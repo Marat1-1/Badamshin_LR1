@@ -1,7 +1,7 @@
 #include <unordered_map>
 #include <vector>
 #include <fstream>
-#include "ClassElements.h"
+#include "ClassCS.h"
 #include "Console.h"
 
 #ifndef COMPRESSORSTATIONCOLLECTION_H

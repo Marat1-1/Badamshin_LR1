@@ -2,6 +2,12 @@
 #include <Windows.h>
 #include "Console.h"
 
+
+// для работы с консолью
+HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+HANDLE& Console::myHandle = handle;
+
+
 // Вывод символа определённое количество раз
 void Console::PrintChar(char ch, size_t count)
 {

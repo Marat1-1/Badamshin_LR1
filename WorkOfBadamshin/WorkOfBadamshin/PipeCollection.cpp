@@ -2,6 +2,10 @@
 #include "Verification.h"
 #include <iomanip>
 
+
+// Счётчик id
+size_t Pipe::maxIdPipe = 0;
+
 // Добавление трубы в список
 void PipeCollection::AddPipe()
 {
@@ -14,7 +18,7 @@ void PipeCollection::ChangePipe()
 {
 	size_t changeId;
 	bool query;
-	std::cout << "Всего добавлено труб: " << size(pipeCollection) << std::endl
+	std::cout << "Всего добавлено труб: " << pipeCollection.size() << std::endl
 		<< "Id доступные для редактирования: ";
 	for (const auto& el : pipeCollection)
 		std::cout << el.first << "  ";
@@ -100,27 +104,23 @@ void PipeCollection::SaveToFile(std::ofstream& fout)
 void PipeCollection::DownloadFromFile(std::ifstream& fin)
 {
 	size_t percent = 0;
-	if (fin.peek() != -1)
+	size_t maxId;
+	fin >> maxId;
+	if (maxId > Pipe::maxIdPipe)
+		Pipe::maxIdPipe = maxId;
+	while (fin.peek() != ' ' && fin.peek() != -1)
 	{
-		fin >> Pipe::maxIdPipe;
-		while (fin.peek() != ' ' && fin.peek() != -1)
-		{
-			Pipe pipe(fin);
-			pipeCollection.emplace(pipe.id, pipe);
-			fin.ignore(1000, '\n');
-		}
-		while (percent <= 100)
-		{
-			std::cout << "\t\t" << "Загрузка труб: " << percent++ << "%";
-			std::cout << '\r';
-			Sleep(20);
-		}
-		Console::PrintTitleText("\nТрубы загружены!");
+		Pipe pipe(fin);
+		pipeCollection.emplace(pipe.id, pipe);
+		fin.ignore(1000, '\n');
 	}
-	else
+	while (percent <= 100)
 	{
-		Console::PrintErrorText("\nНельзя загружать данные из пустого файла, сначала нужно сохранить там данные!!!");
+		std::cout << "\t\t" << "Загрузка труб: " << percent++ << "%";
+		std::cout << '\r';
+		Sleep(20);
 	}
+	Console::PrintTitleText("\nТрубы загружены!");
 }
 
 // Фильтр труб
@@ -137,51 +137,68 @@ void PipeCollection::FilterPipe()
 // Удаление труб
 void PipeCollection::DeletePipe()
 {
-	size_t delId; // id трубы, которую нужно удалить
-	bool query;
 	if (pipeCollection.empty())
 	{
 		Console::PrintErrorText("Вы не добавили ни одной трубы, удаление недоступно!");
 		verification::GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
 		return;
 	}
-	query = verification::GetBoolValue("Нажмите на \"y\", если хотите произвести удаление по одной трубе, на \"n\", если хотите произвести пакетное удаление по фильтру: ",
+	bool query;
+	query = verification::GetBoolValue("\nНажмите на \"y\", если хотите произвести удаление по одной трубе, на \"n\", если хотите произвести пакетное удаление по фильтру: ",
 		"\nНеизвестная команда! Повторите ввод по указанным правилам!!!");
-	if (query)
+	if (query) // Удаление по одной трубе
 	{
-		while (true)
+		std::cout << "\n\nВсего Труб: " << pipeCollection.size() << std::endl
+			<< "Id доступные для удаления: ";
+		for (const auto& el : pipeCollection)
+			std::cout << el.first << "  ";
+		std::vector<size_t> vectorIdForDelete = verification::GetMultipleNumericValues<size_t>(
+			"\nВведите через пробел id труб, которые хотели бы удалить: ",
+			"\nОшибка, вы ввели недопустимый формат, повторите ввод заново!");
+		for (const auto id : vectorIdForDelete)
 		{
-			std::cout << "\n\nВсего труб: " << size(pipeCollection) << std::endl
-				<< "Id доступные для удаления: ";
-			for (const auto& el : pipeCollection)
-				std::cout << el.first << "  ";
-			std::cout << std::endl;
-			delId = verification::GetNumericValue<size_t>("Введите id трубы, которую вы бы хотели удалить: ",
-				"Ошибка! Вы ввели недопустимое значение, возможно вы ввели несуществующий id или же произвели некорректный ввод, помните id это положительное, целое число!!!", 1, Pipe::maxIdPipe);
-			if (pipeCollection.find(delId) != pipeCollection.end())
+			if (pipeCollection.find(id) != pipeCollection.end())
 			{
-				pipeCollection.erase(delId);
-				Console::PrintTitleText("Труба была успешно удалена!");
+				pipeCollection.erase(id);
+				Console::PrintTitleText("Труба с id = " + std::to_string(id) + " была удалена!\n");
 			}
 			else
-				Console::PrintErrorText("По указанному id не было найдено ни одной трубы, возможно труба уже была удалена!!!");
-			query = verification::GetBoolValue("\n\nХотите ли вы продолжить удалять трубы, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
-				"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!");
-			if (!query)
-				break;
+				Console::PrintErrorText("Труба с id = " + std::to_string(id) + " не была найдена в списке всех труб!\n");
 		}
 	}
-	else
+	else // Пакетное удаление
 	{
 		FilterPipe();
-		if (size(vectorIdForFilter) != 0)
+		if (!vectorIdForFilter.empty())
 		{
-			std::cout << "\n\nБудут удалены следующие трубы:" << std::endl;
+			std::cout << "\n\nТрубы, полученные после фильтрации:" << std::endl;
 			PrintFilterTablePipes();
-			for (const auto& i : vectorIdForFilter)
-				pipeCollection.erase(i);
+			query = verification::GetBoolValue("\nЕсли хотите удалить все отфильтрованные трубы, нажмите \"y\", если часть из них, то нажмите \"n\": ",
+				"\nНеизвестная команда! Повторите ввод по указанным выше правилам!!!");
+			if (query) // Удалить все отфильтрованные трубы
+			{
+				for (const auto& i : vectorIdForFilter)
+					pipeCollection.erase(i);
+				Console::PrintTitleText("\nТрубы были успешно удалены!");
+			}
+			else // Удалить часть отфильтрованных труб
+			{
+				std::vector<size_t> vectorIdForDelete = verification::GetMultipleNumericValues<size_t>(
+					"\nВведите через пробел id труб, которые хотели бы удалить: ",
+					"\nОшибка, вы ввели недопустимый формат, повторите ввод заново!");
+				for (auto id : vectorIdForDelete)
+				{
+					auto it = std::find(vectorIdForFilter.begin(), vectorIdForFilter.end(), id);
+					if (it != vectorIdForFilter.end())
+					{
+						pipeCollection.erase(id);
+						Console::PrintTitleText("Труба с id = " + std::to_string(id) + " была удалена!\n");
+					}
+					else
+						Console::PrintErrorText("Труба с id = " + std::to_string(id) + " не была найдена в списке отфильтрованных труб!\n");
+				}
+			}
 			vectorIdForFilter.clear();
-			Console::PrintTitleText("\n\nТрубы успешно удалены!");
 		}
 		else
 			Console::PrintErrorText("\nПо вашему фильтру не было найдено ни одной трубы!");
@@ -193,33 +210,57 @@ void PipeCollection::DeletePipe()
 // Пакетное редактирование труб
 void PipeCollection::BatchChangePipe()
 {
-	bool query;
-	bool repairStatus;
 	if (pipeCollection.empty())
 	{
 		Console::PrintErrorText("\nВы не добавили ни одной трубы, пакетное редактирование недоступно!");
 		verification::GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
 		return;
 	}
+	bool query;
+	bool repairStatus;
 	query = verification::GetBoolValue("\nНажмите на \"y\", если хотите редактировать все трубы, на \"n\", если только определённое подмножество: ",
 		"\nОшибка!!! Вы нажали на некорректную кнопку, осуществите ввод по указанным вам правилам!!!");
-	if (!query)
+	if (!query) // Пакетное редактирование
 	{
 		FilterPipe();
-		if (size(vectorIdForFilter) != 0)
+		if (!vectorIdForFilter.empty())
 		{
 			PrintFilterTablePipes();
-			repairStatus = verification::GetBoolValue("\n\nУкажите новое состояние для выбранных труб, если в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
-				"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!");
-			for (const auto& i : vectorIdForFilter)
-				pipeCollection[i].repair = repairStatus;
-			Console::PrintTitleText("\nТрубы отредактированы!");
+			query = verification::GetBoolValue("\nНажмите на \"y\", если хотите редактировать все отфильтрованные трубы, на \"n\", если только определённое подмножество: ",
+				"\nОшибка!!! Вы нажали на некорректную кнопку, осуществите ввод по указанным вам правилам!!!");
+			if (!query) // Редактировать все отфильтрованные трубы
+			{
+				std::vector<size_t> vectorIdForChange = verification::GetMultipleNumericValues<size_t>(
+					"\nВведите через пробел id труб, которые хотели бы отредактировать: ",
+					"\nОшибка, вы ввели недопустимый формат, повторите ввод заново!");
+				repairStatus = verification::GetBoolValue("\n\nУкажите новое состояние для выбранных труб, если в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
+					"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!");
+				for (const auto id : vectorIdForChange)
+				{
+					auto it = std::find(vectorIdForFilter.begin(), vectorIdForFilter.end(), id);
+					if (it != vectorIdForFilter.end())
+					{
+						pipeCollection[id].repair = repairStatus;
+						Console::PrintTitleText("Труба с id - " + std::to_string(id) + " была отредактирована");
+					}
+					else
+						Console::PrintErrorText("Труба с id - " + std::to_string(id) + " не была найдена в списке отфильтрованных труб\n");
+				}
+			}
+			else // Отредактировать часть отфильтрованных труб
+			{
+				repairStatus = verification::GetBoolValue("\n\nУкажите новое состояние для выбранных труб, если в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
+					"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!");
+				for (const auto& i : vectorIdForFilter)
+					pipeCollection[i].repair = repairStatus;
+				Console::PrintTitleText("\nТрубы отредактированы!");
+			}
 		}
 		else
 			Console::PrintErrorText("\nПо вашему фильтру не было найдено ни одной трубы!");
 		vectorIdForFilter.clear();
 	}
-	else
+	else // Редактирование всех труб
 	{
 		PrintTablePipes();
 		repairStatus = verification::GetBoolValue("\n\nУкажите новое состояние для выбранных труб, если в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",

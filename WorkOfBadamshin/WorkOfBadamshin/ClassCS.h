@@ -1,25 +1,9 @@
 #include <string>
 #include <fstream>
 
-#ifndef CLASSELEMENTS_H
-#define CLASSELEMENTS_H
 
-// Структура Трубы
-class Pipe
-{
-private:
-	size_t id;
-	static size_t maxIdPipe; // количество созданных элементов за всё время
-public:
-	double length;
-	double diameter;
-	bool repair;
-	Pipe(); // в конструкторе идёт работа с пользователем, запрашиваются данные на ввод
-	Pipe(std::ifstream&); // Конструктор для считывания из файла
-	void GhangePipe();
-	void SaveToFile(std::ofstream&);
-	friend class PipeCollection;
-};
+#ifndef CLASS_CS_H
+#define CLASS_CS_H
 
 // Структура КС
 class CompressorStation
@@ -39,4 +23,4 @@ public:
 	friend class CompressorStationCollection;
 };
 
-#endif // !CLASSELEMENTS_H
+#endif // !CLASS_CS_H
