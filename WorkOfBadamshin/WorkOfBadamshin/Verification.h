@@ -1,7 +1,7 @@
 #include <string>
 #include <iostream>
 #include <conio.h>
-#include <vector>
+#include <set>
 #include "Console.h"
 
 #ifndef VERIFICATION_H
@@ -17,7 +17,7 @@ namespace verification
 	template <typename T>
 	T GetNumericValue(std::string textRequest, std::string textError, T minValue, T maxValue);
 	template <typename T>
-	std::vector<T> GetMultipleNumericValues(std::string textRequest, std::string textError);
+	std::set<T> GetMultipleNumericValues(std::string textRequest, std::string textError);
 }
 
 // ќжидание ввода числа
@@ -47,9 +47,9 @@ T verification::GetNumericValue(std::string textRequest, std::string textError, 
 
 // ќжидание ввода чисел
 template <typename T>
-std::vector<T> verification::GetMultipleNumericValues(std::string textRequest, std::string textError)
+std::set<T> verification::GetMultipleNumericValues(std::string textRequest, std::string textError)
 {
-	std::vector<T> resultVector;
+	std::set<T> resultSet;
 	T value;
 	bool flag = true;
 	while (flag)
@@ -60,11 +60,11 @@ std::vector<T> verification::GetMultipleNumericValues(std::string textRequest, s
 		{
 			std::cin >> value;
 			if (std::cin.good())
-				resultVector.push_back(value);
+				resultSet.insert(value);
 			else
 			{
 				Console::PrintErrorText(textError);
-				resultVector.clear();
+				resultSet.clear();
 				std::cin.clear();
 				std::cin.ignore(1000, '\n');
 				flag = true;
@@ -74,7 +74,7 @@ std::vector<T> verification::GetMultipleNumericValues(std::string textRequest, s
 				break;
 		}
 	}
-	return resultVector;
+	return resultSet;
 }
 
 #endif // !VERIFICATION_H

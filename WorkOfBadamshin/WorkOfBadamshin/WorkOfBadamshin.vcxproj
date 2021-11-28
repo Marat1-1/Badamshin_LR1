@@ -139,7 +139,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ClassElements.cpp" />
+    <ClCompile Include="ClassCS.cpp" />
+    <ClCompile Include="ClassPipe.cpp" />
     <ClCompile Include="CompressorStationCollection.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="PipeCollection.cpp" />

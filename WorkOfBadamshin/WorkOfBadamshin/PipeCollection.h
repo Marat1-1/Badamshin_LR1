@@ -22,6 +22,7 @@ public:
 	void DownloadFromFile(std::ifstream&);
 	void DeletePipe();
 	void BatchChangePipe();
+	void AttachPipe();
 };
 
 #endif // !PIPECOLLECTION_H

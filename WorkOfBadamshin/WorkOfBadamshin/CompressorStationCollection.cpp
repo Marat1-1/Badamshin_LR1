@@ -207,10 +207,10 @@ void CompressorStationCollection::DeleteCS()
 			<< "Id доступные для удаления: ";
 		for (const auto& el : csCollection)
 			std::cout << el.first << "  ";
-		std::vector<size_t> vectorIdForDelete = verification::GetMultipleNumericValues<size_t>(
+		std::set<size_t> setIdForDelete = verification::GetMultipleNumericValues<size_t>(
 			"\nВведите через пробел id КС, которые хотели бы удалить: ",
 			"\nОшибка, вы ввели недопустимый формат, повторите ввод заново!");
-		for (const auto id : vectorIdForDelete)
+		for (const auto id : setIdForDelete)
 		{
 			if (csCollection.find(id) != csCollection.end())
 			{
@@ -238,10 +238,10 @@ void CompressorStationCollection::DeleteCS()
 			}
 			else // Удаление части из отфильтрованных КС
 			{
-				std::vector<size_t> vectorIdForDelete = verification::GetMultipleNumericValues<size_t>(
+				std::set<size_t> setIdForDelete = verification::GetMultipleNumericValues<size_t>(
 					"\nВведите через пробел id КС, которые хотели бы удалить: ",
 					"\nОшибка, вы ввели недопустимый формат, повторите ввод заново!");
-				for (auto id : vectorIdForDelete)
+				for (auto id : setIdForDelete)
 				{
 					auto it = std::find(vectorIdForFilter.begin(), vectorIdForFilter.end(), id);
 					if (it != vectorIdForFilter.end())
@@ -297,10 +297,10 @@ void CompressorStationCollection::BatchChangeCS()
 			}
 			else // Редактирование КС по id среди отфильтрованных
 			{
-				std::vector<size_t> vectorIdForChange = verification::GetMultipleNumericValues<size_t>(
+				std::set<size_t> setIdForChange = verification::GetMultipleNumericValues<size_t>(
 					"\nВведите через пробел id КС, которые хотели бы отредактировать: ",
 					"\nОшибка, вы ввели недопустимый формат, повторите ввод заново!");
-				for (const auto id : vectorIdForChange)
+				for (const auto id : setIdForChange)
 				{
 					auto it = std::find(vectorIdForFilter.begin(), vectorIdForFilter.end(), id);
 					if (it != vectorIdForFilter.end())

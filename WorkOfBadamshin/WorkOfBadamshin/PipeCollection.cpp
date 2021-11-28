@@ -152,10 +152,10 @@ void PipeCollection::DeletePipe()
 			<< "Id доступные для удаления: ";
 		for (const auto& el : pipeCollection)
 			std::cout << el.first << "  ";
-		std::vector<size_t> vectorIdForDelete = verification::GetMultipleNumericValues<size_t>(
+		std::set<size_t> setIdForDelete = verification::GetMultipleNumericValues<size_t>(
 			"\nВведите через пробел id труб, которые хотели бы удалить: ",
 			"\nОшибка, вы ввели недопустимый формат, повторите ввод заново!");
-		for (const auto id : vectorIdForDelete)
+		for (const auto id : setIdForDelete)
 		{
 			if (pipeCollection.find(id) != pipeCollection.end())
 			{
@@ -183,10 +183,10 @@ void PipeCollection::DeletePipe()
 			}
 			else // Удалить часть отфильтрованных труб
 			{
-				std::vector<size_t> vectorIdForDelete = verification::GetMultipleNumericValues<size_t>(
+				std::set<size_t> setIdForDelete = verification::GetMultipleNumericValues<size_t>(
 					"\nВведите через пробел id труб, которые хотели бы удалить: ",
 					"\nОшибка, вы ввели недопустимый формат, повторите ввод заново!");
-				for (auto id : vectorIdForDelete)
+				for (auto id : setIdForDelete)
 				{
 					auto it = std::find(vectorIdForFilter.begin(), vectorIdForFilter.end(), id);
 					if (it != vectorIdForFilter.end())
@@ -230,12 +230,12 @@ void PipeCollection::BatchChangePipe()
 				"\nОшибка!!! Вы нажали на некорректную кнопку, осуществите ввод по указанным вам правилам!!!");
 			if (!query) // Редактировать все отфильтрованные трубы
 			{
-				std::vector<size_t> vectorIdForChange = verification::GetMultipleNumericValues<size_t>(
+				std::set<size_t> setIdForChange = verification::GetMultipleNumericValues<size_t>(
 					"\nВведите через пробел id труб, которые хотели бы отредактировать: ",
 					"\nОшибка, вы ввели недопустимый формат, повторите ввод заново!");
 				repairStatus = verification::GetBoolValue("\n\nУкажите новое состояние для выбранных труб, если в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
 					"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!");
-				for (const auto id : vectorIdForChange)
+				for (const auto id : setIdForChange)
 				{
 					auto it = std::find(vectorIdForFilter.begin(), vectorIdForFilter.end(), id);
 					if (it != vectorIdForFilter.end())
@@ -271,3 +271,6 @@ void PipeCollection::BatchChangePipe()
 	}
 	system("pause");
 }
+
+
+// Присоединение трубы
