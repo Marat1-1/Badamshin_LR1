@@ -51,6 +51,17 @@ void Pipe::SetOutId(size_t id)
 	outId = id;
 }
 
+// Получить InId и OutId
+size_t Pipe::GetInId() const
+{
+	return inId;
+}
+
+size_t Pipe::GetOutId() const
+{
+	return outId;
+}
+
 // Установить значение поля used
 void Pipe::SetUsed(bool flag)
 {

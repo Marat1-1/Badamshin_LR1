@@ -52,14 +52,14 @@ void PipeCollection::Change()
 // Вывод таблицы труб на экран (вектор самого класса)
 void PipeCollection::PrintTable()
 {
-	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 131;
+	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 161;
 	Console::PrintTitleText("\n\t\t\t\tТаблица труб");
 	Console::PrintChar('-', tableWidth);
-	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30) << "LENGTH" << std::setw(tabulation_30) << "DIAMETER" << std::setw(tabulation_30) << "REPAIR" << std::setw(tabulation_20) << "|" << std::endl;
+	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30) << "LENGTH" << std::setw(tabulation_30) << "DIAMETER" << std::setw(tabulation_30) << "REPAIR" << std::setw(tabulation_30) << "CONNECTION" << std::setw(tabulation_20) << "|" << std::endl;
 	Console::PrintChar('-', tableWidth);
 	for (const auto& p : pipeCollection)
 	{
-		std::cout << "|" << std::setw(tabulation_20) << p.second.id << std::setw(tabulation_30) << p.second.length << std::setw(tabulation_30) << p.second.diameter << std::setw(tabulation_30) << (p.second.repair == true ? "true" : "false") << std::setw(tabulation_20) << "|" << std::endl;
+		std::cout << "|" << std::setw(tabulation_20) << p.second.id << std::setw(tabulation_30) << p.second.length << std::setw(tabulation_30) << p.second.diameter << std::setw(tabulation_30) << (p.second.repair ? "true" : "false") << std::setw(tabulation_30) << (p.second.IsUsed() ? "true" : "false") << std::setw(tabulation_20) << "|" << std::endl;
 	}
 	Console::PrintChar('-', tableWidth);
 }
@@ -67,14 +67,14 @@ void PipeCollection::PrintTable()
 // Вывод таблицы труб на экран, при этом функция выводит любой вектор труб
 void PipeCollection::PrintFilterTable(std::vector<size_t>& vectorId)
 {
-	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 131;
+	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 161;
 	Console::PrintTitleText("\n\n\t\tТаблица труб");
 	Console::PrintChar('-', tableWidth);
-	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30) << "LENGTH" << std::setw(tabulation_30) << "DIAMETER" << std::setw(tabulation_30) << "REPAIR" << std::setw(tabulation_20) << "|" << std::endl;
+	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30) << "LENGTH" << std::setw(tabulation_30) << "DIAMETER" << std::setw(tabulation_30) << "REPAIR" << std::setw(tabulation_30) << "CONNECTION" << std::setw(tabulation_20) << "|" << std::endl;
 	Console::PrintChar('-', tableWidth);
 	for (const auto& id : vectorId)
 	{
-		std::cout << "|" << std::setw(tabulation_20) << pipeCollection[id].id << std::setw(tabulation_30) << pipeCollection[id].length << std::setw(tabulation_30) << pipeCollection[id].diameter << std::setw(tabulation_30) << (pipeCollection[id].repair == true ? "true" : "false") << std::setw(tabulation_20) << "|" << std::endl;
+		std::cout << "|" << std::setw(tabulation_20) << pipeCollection[id].id << std::setw(tabulation_30) << pipeCollection[id].length << std::setw(tabulation_30) << pipeCollection[id].diameter << std::setw(tabulation_30) << (pipeCollection[id].repair? "true" : "false") << std::setw(tabulation_30) << (pipeCollection[id].IsUsed() ? "true" : "false") << std::setw(tabulation_20) << "|" << std::endl;
 	}
 	Console::PrintChar('-', tableWidth);
 }
@@ -151,19 +151,20 @@ void PipeCollection::Delete()
 		std::cout << "\n\nВсего Труб: " << pipeCollection.size() << std::endl
 			<< "Id доступные для удаления: ";
 		for (const auto& el : pipeCollection)
-			std::cout << el.first << "  ";
+			if (!el.second.IsUsed())
+				std::cout << el.first << "  ";
 		std::set<size_t> setIdForDelete = verification::GetMultipleNumericValues<size_t>(
 			"\nВведите через пробел id труб, которые хотели бы удалить: ",
 			"\nОшибка, вы ввели недопустимый формат, повторите ввод заново!");
 		for (const auto id : setIdForDelete)
 		{
-			if (pipeCollection.find(id) != pipeCollection.end())
+			if (pipeCollection.find(id) != pipeCollection.end() && !(*pipeCollection.find(id)).second.IsUsed())
 			{
 				pipeCollection.erase(id);
 				Console::PrintTitleText("Труба с id = " + std::to_string(id) + " была удалена!\n");
 			}
 			else
-				Console::PrintErrorText("Труба с id = " + std::to_string(id) + " не была найдена в списке всех труб!\n");
+				Console::PrintErrorText("Труба с id = " + std::to_string(id) + " не была найдена в списке доступных для удаления труб!\n");
 		}
 	}
 	else // Пакетное удаление
@@ -178,8 +179,11 @@ void PipeCollection::Delete()
 			if (query) // Удалить все отфильтрованные трубы
 			{
 				for (const auto& i : vectorIdForFilter)
-					pipeCollection.erase(i);
-				Console::PrintTitleText("\nТрубы были успешно удалены!");
+					if (!pipeCollection[i].IsUsed())
+						pipeCollection.erase(i);
+					else
+						Console::PrintErrorText("\nТруба c id " + std::to_string(i) + " не может быть удалена, т.к.она учавствует в связи.");
+				Console::PrintTitleText("\nОстальные трубы были успешно удалены!");
 			}
 			else // Удалить часть отфильтрованных труб
 			{
@@ -189,13 +193,13 @@ void PipeCollection::Delete()
 				for (auto id : setIdForDelete)
 				{
 					auto it = std::find(vectorIdForFilter.begin(), vectorIdForFilter.end(), id);
-					if (it != vectorIdForFilter.end())
+					if (it != vectorIdForFilter.end() && !(*pipeCollection.find(id)).second.IsUsed())
 					{
 						pipeCollection.erase(id);
 						Console::PrintTitleText("Труба с id = " + std::to_string(id) + " была удалена!\n");
 					}
 					else
-						Console::PrintErrorText("Труба с id = " + std::to_string(id) + " не была найдена в списке отфильтрованных труб!\n");
+						Console::PrintErrorText("Труба с id = " + std::to_string(id) + " не была найдена в списке отфильтрованных труб или же она учавствует в связи, удаление невозможно!\n");
 				}
 			}
 			vectorIdForFilter.clear();

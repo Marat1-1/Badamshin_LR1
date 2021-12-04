@@ -26,6 +26,8 @@ public:
 	bool IsUsed() const;
 	void SetInId(size_t);
 	void SetOutId(size_t);
+	size_t GetInId() const;
+	size_t GetOutId() const;
 	static size_t GetMaxID();
 	friend class PipeCollection;
 };

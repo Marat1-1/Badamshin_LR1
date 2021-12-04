@@ -14,11 +14,13 @@ private:
 	CompressorStationCollection newCSCollection;
 	std::set<size_t> freePipes;
 	std::set<size_t> freeCS;
+	void printMenu();
 	void printFreePipes();
 	void printFreeCS();
-	void printMenu();
-	void fillSetFreePipes();
-	void fillSetFreeCS();
+	void printTableConnections();
+	bool checkFreePipes();
+	bool checkFreeCS();
+	bool checkingConnections();
 public:
 	// Методы управления сетью
 	void manageNetwork();
