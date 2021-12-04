@@ -5,12 +5,14 @@
 #ifndef CLASS_CS_H
 #define CLASS_CS_H
 
-// Структура КС
+// Класс КС
 class CompressorStation
 {
 private:
 	size_t id;
-	static size_t maxIdCS; // количество созданных элементов за всё время
+	static size_t maxIdCS; // максимальный id среди элементов
+	size_t countInUse;
+	bool used;
 public:
 	std::string name;
 	size_t countWorkShops;
@@ -21,6 +23,10 @@ public:
 	void ChangeCS();
 	void SaveToFile(std::ofstream&);
 	friend class CompressorStationCollection;
+	static size_t GetMaxID();
+	void IncCountUse();
+	void DecCountUse();
+	bool IsUsed() const;
 };
 
 #endif // !CLASS_CS_H

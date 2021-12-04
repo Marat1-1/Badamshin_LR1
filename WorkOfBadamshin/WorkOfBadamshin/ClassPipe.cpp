@@ -4,7 +4,7 @@
 
 
 // Инициализация трубы
-Pipe::Pipe()
+Pipe::Pipe() : used(false)
 {
 	maxIdPipe++;
 	this->id = maxIdPipe;
@@ -19,7 +19,7 @@ Pipe::Pipe()
 }
 
 // Считывание из файла
-Pipe::Pipe(std::ifstream& fin)
+Pipe::Pipe(std::ifstream& fin) : used(false)
 {
 	fin >> this->id >> this->length >> this->diameter >> this->repair;
 }
@@ -38,4 +38,33 @@ void Pipe::SaveToFile(std::ofstream& fout)
 		<< length << std::endl
 		<< diameter << std::endl
 		<< repair << std::endl;
+}
+
+// Установить InId и OutId
+void Pipe::SetInId(size_t id)
+{
+	inId = id;
+}
+
+void Pipe::SetOutId(size_t id)
+{
+	outId = id;
+}
+
+// Установить значение поля used
+void Pipe::SetUsed(bool flag)
+{
+	used = flag;
+}
+
+// Узнать значение поля used
+bool Pipe::IsUsed() const
+{
+	return used;
+}
+
+// Получить максимальный id
+size_t Pipe::GetMaxID()
+{
+	return maxIdPipe;
 }

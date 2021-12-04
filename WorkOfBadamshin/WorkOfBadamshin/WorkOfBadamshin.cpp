@@ -1,8 +1,7 @@
 ﻿#include <ctime>
 #include <conio.h>
 #include "Console.h"
-#include "PipeCollection.h"
-#include "CompressorStationCollection.h"
+#include "GasTransmissionNetwork.h"
 #include "Verification.h"
 
 // Точка входа в программу
@@ -11,8 +10,7 @@ int main()
 	Console::SetRusLocale();
 	Console::SetTitleConsoleWindow();
 	Console::ChangeConsoleFont(0, 20);
-	PipeCollection newPipeCollection;
-	CompressorStationCollection newCSColletion;
+	GasTransmissionNetwork newNetwork;
 	while (true)
 	{
 		Console::PrintMenu();
@@ -22,23 +20,23 @@ int main()
 		{
 			system("CLS");
 			Console::PrintTitleText("\t\t\t\t\t\tИНИЦИАЛИЗАЦИЯ ТРУБЫ");
-			newPipeCollection.AddPipe();
+			newNetwork.AddPipe();
 			break;
 		}
 		case '2':
 		{
 			system("CLS");
 			Console::PrintTitleText("\t\t\t\t\tИНИЦИАЛИЗАЦИЯ КОМПРЕССОРНОЙ СТАНЦИИ");
-			newCSColletion.AddCS();
+			newNetwork.AddCS();
 			break;
 		}
 		case '3':
 		{
 			system("ClS");
 			Console::PrintTitleText("\n\t\t\t\t\t\t\tПРОСМОТР ВСЕХ ТРУБ\n");
-			newPipeCollection.PrintTablePipes();
+			newNetwork.PrintTablePipes();
 			Console::PrintTitleText("\n\n\n\n\t\t\t\t\t\t\tПРОСМОТР ВСЕХ КОМПРЕССОРНЫХ СТАНЦИЙ\n");
-			newCSColletion.PrintTableCS();
+			newNetwork.PrintTableCS();
 			verification::GetPressEscape("\n\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
 			break;
 		}
@@ -46,14 +44,14 @@ int main()
 		{
 			system("CLS");
 			Console::PrintTitleText("\n\t\t\t\t\tРЕДАКТИРОВАНИЕ ТРУБ\n");
-			newPipeCollection.ChangePipe();
+			newNetwork.ChangePipe();
 			break;
 		}
 		case '5':
 		{
 			system("CLS");
 			Console::PrintTitleText("\n\t\t\t\t\tРЕДАКТИРОВАНИЕ КОМПРЕССОРНЫХ СТАНЦИЙ\n");
-			newCSColletion.ChangeCS();
+			newNetwork.ChangeCS();
 			break;
 		}
 		case '6':
@@ -65,9 +63,9 @@ int main()
 			std::ofstream fout(fileName);
 			if (fout.is_open())
 			{
-				newPipeCollection.SaveToFile(fout);
+				newNetwork.SaveToFilePipeCollection(fout);
 				fout << ' ' << std::endl;
-				newCSColletion.SaveToFile(fout);
+				newNetwork.SaveToFileCSCollection(fout);
 			}
 			else
 				Console::PrintErrorText("\nОШИБКА!!! Файл по указанному пути не найден, либо он не существует!");
@@ -86,9 +84,9 @@ int main()
 			{
 				if (fin.peek() != -1)
 				{
-					newPipeCollection.DownloadFromFile(fin);
+					newNetwork.DownloadFromFilePipeCollection(fin);
 					fin.ignore(10000, '\n');
-					newCSColletion.DownloadFromFile(fin);
+					newNetwork.DownloadFromFileCSCollection(fin);
 				}
 				else
 				{
@@ -105,28 +103,34 @@ int main()
 		{
 			system("CLS");
 			Console::PrintTitleText("\n\t\tУДАЛЕНИЕ ТРУБЫ");
-			newPipeCollection.DeletePipe();
+			newNetwork.DeletePipe();
 			break;
 		}
 		case '9':
 		{
 			system("CLS");
 			Console::PrintTitleText("\n\t\tУДАЛЕНИЕ КС");
-			newCSColletion.DeleteCS();
+			newNetwork.DeleteCS();
 			break;
 		}
 		case 'a':
 		{
 			system("CLS");
 			Console::PrintTitleText("\n\t\t\tПАКЕТНОЕ РЕДАКТИРОВАНИЕ ТРУБ");
-			newPipeCollection.BatchChangePipe();
+			newNetwork.BatchChangePipeCollection();
 			break;
 		}
 		case 'b':
 		{
 			system("CLS");
 			Console::PrintTitleText("\n\t\t\t\tПАКЕТНОЕ РЕДАКТИРОВАНИЕ КС");
-			newCSColletion.BatchChangeCS();
+			newNetwork.BatchChangeCSCollection();
+			break;
+		}
+		case 'c':
+		{
+			system("CLS");
+			newNetwork.manageNetwork();
 			break;
 		}
 		case '0':

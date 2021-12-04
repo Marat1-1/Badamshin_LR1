@@ -143,6 +143,7 @@
     <ClCompile Include="ClassPipe.cpp" />
     <ClCompile Include="CompressorStationCollection.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="GasTransmissionNetwork.cpp" />
     <ClCompile Include="PipeCollection.cpp" />
     <ClCompile Include="Verification.cpp" />
     <ClCompile Include="WorkOfBadamshin.cpp" />
@@ -150,8 +151,10 @@
   <ItemGroup>
     <ClInclude Include="ClassCS.h" />
     <ClInclude Include="ClassPipe.h" />
+    <ClInclude Include="Collection.h" />
     <ClInclude Include="CompressorStationCollection.h" />
     <ClInclude Include="Console.h" />
+    <ClInclude Include="GasTransmissionNetwork.h" />
     <ClInclude Include="PipeCollection.h" />
     <ClInclude Include="Verification.h" />
   </ItemGroup>

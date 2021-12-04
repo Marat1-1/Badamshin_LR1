@@ -30,6 +30,7 @@ void Console::PrintMenu()
 		<< "9. Удалить КС" << std::endl
 		<< "a. Пакетное редактирование труб" << std::endl
 		<< "b. Пакетное редактирование КС" << std::endl
+		<< "c. Газотранспортная сеть" << std::endl
 		<< "0. Выход" << std::endl
 		<< "Итак, нажмите на нужную клавишу на клавиатуре ";
 }
@@ -52,6 +53,7 @@ void Console::PrintErrorText(std::string textError)
 	SetConsoleTextAttribute(myHandle, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 }
 
+
 // Изменение шрифта консоли
 void Console::ChangeConsoleFont(short width, short height)
 {
@@ -64,11 +66,13 @@ void Console::ChangeConsoleFont(short width, short height)
 	SetCurrentConsoleFontEx(myHandle, FALSE, &cfi);
 }
 
+
 // Установка русского языка в консоли
 void Console::SetRusLocale()
 {
 	setlocale(LC_ALL, "Rus");
 }
+
 
 // Установка титульной надписи консольного окна
 void Console::SetTitleConsoleWindow()

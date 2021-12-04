@@ -45,7 +45,7 @@ T verification::GetNumericValue(std::string textRequest, std::string textError, 
 	}
 }
 
-// ќжидание ввода чисел
+// ќжидание ввода нескольких чисел
 template <typename T>
 std::set<T> verification::GetMultipleNumericValues(std::string textRequest, std::string textError)
 {

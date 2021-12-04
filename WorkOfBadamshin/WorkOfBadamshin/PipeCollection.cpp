@@ -7,14 +7,14 @@
 size_t Pipe::maxIdPipe = 0;
 
 // Добавление трубы в список
-void PipeCollection::AddPipe()
+void PipeCollection::Add()
 {
 	Pipe pipe;
 	pipeCollection.emplace(pipe.id, pipe);
 }
 
 // Редактирование трубы
-void PipeCollection::ChangePipe()
+void PipeCollection::Change()
 {
 	size_t changeId;
 	bool query;
@@ -50,7 +50,7 @@ void PipeCollection::ChangePipe()
 }
 
 // Вывод таблицы труб на экран (вектор самого класса)
-void PipeCollection::PrintTablePipes()
+void PipeCollection::PrintTable()
 {
 	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 131;
 	Console::PrintTitleText("\n\t\t\t\tТаблица труб");
@@ -65,14 +65,14 @@ void PipeCollection::PrintTablePipes()
 }
 
 // Вывод таблицы труб на экран, при этом функция выводит любой вектор труб
-void PipeCollection::PrintFilterTablePipes()
+void PipeCollection::PrintFilterTable(std::vector<size_t>& vectorId)
 {
 	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 131;
 	Console::PrintTitleText("\n\n\t\tТаблица труб");
 	Console::PrintChar('-', tableWidth);
 	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30) << "LENGTH" << std::setw(tabulation_30) << "DIAMETER" << std::setw(tabulation_30) << "REPAIR" << std::setw(tabulation_20) << "|" << std::endl;
 	Console::PrintChar('-', tableWidth);
-	for (const auto& id : vectorIdForFilter)
+	for (const auto& id : vectorId)
 	{
 		std::cout << "|" << std::setw(tabulation_20) << pipeCollection[id].id << std::setw(tabulation_30) << pipeCollection[id].length << std::setw(tabulation_30) << pipeCollection[id].diameter << std::setw(tabulation_30) << (pipeCollection[id].repair == true ? "true" : "false") << std::setw(tabulation_20) << "|" << std::endl;
 	}
@@ -124,7 +124,7 @@ void PipeCollection::DownloadFromFile(std::ifstream& fin)
 }
 
 // Фильтр труб
-void PipeCollection::FilterPipe()
+void PipeCollection::Filter()
 {
 	bool query;
 	query = verification::GetBoolValue("\nЕсли вам нужны трубы, состояние которых: \"В ремонте\", то кликните по \"y\", если же нужны исправные трубы, то кликните по \"n\"",
@@ -135,7 +135,7 @@ void PipeCollection::FilterPipe()
 }
 
 // Удаление труб
-void PipeCollection::DeletePipe()
+void PipeCollection::Delete()
 {
 	if (pipeCollection.empty())
 	{
@@ -168,11 +168,11 @@ void PipeCollection::DeletePipe()
 	}
 	else // Пакетное удаление
 	{
-		FilterPipe();
+		Filter();
 		if (!vectorIdForFilter.empty())
 		{
 			std::cout << "\n\nТрубы, полученные после фильтрации:" << std::endl;
-			PrintFilterTablePipes();
+			PrintFilterTable(vectorIdForFilter);
 			query = verification::GetBoolValue("\nЕсли хотите удалить все отфильтрованные трубы, нажмите \"y\", если часть из них, то нажмите \"n\": ",
 				"\nНеизвестная команда! Повторите ввод по указанным выше правилам!!!");
 			if (query) // Удалить все отфильтрованные трубы
@@ -208,7 +208,7 @@ void PipeCollection::DeletePipe()
 }
 
 // Пакетное редактирование труб
-void PipeCollection::BatchChangePipe()
+void PipeCollection::BatchChange()
 {
 	if (pipeCollection.empty())
 	{
@@ -222,10 +222,10 @@ void PipeCollection::BatchChangePipe()
 		"\nОшибка!!! Вы нажали на некорректную кнопку, осуществите ввод по указанным вам правилам!!!");
 	if (!query) // Пакетное редактирование
 	{
-		FilterPipe();
+		Filter();
 		if (!vectorIdForFilter.empty())
 		{
-			PrintFilterTablePipes();
+			PrintFilterTable(vectorIdForFilter);
 			query = verification::GetBoolValue("\nНажмите на \"y\", если хотите редактировать все отфильтрованные трубы, на \"n\", если только определённое подмножество: ",
 				"\nОшибка!!! Вы нажали на некорректную кнопку, осуществите ввод по указанным вам правилам!!!");
 			if (!query) // Редактировать все отфильтрованные трубы
@@ -262,7 +262,7 @@ void PipeCollection::BatchChangePipe()
 	}
 	else // Редактирование всех труб
 	{
-		PrintTablePipes();
+		PrintTable();
 		repairStatus = verification::GetBoolValue("\n\nУкажите новое состояние для выбранных труб, если в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
 			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!");
 		for (auto& el : pipeCollection)
@@ -271,6 +271,3 @@ void PipeCollection::BatchChangePipe()
 	}
 	system("pause");
 }
-
-
-// Присоединение трубы

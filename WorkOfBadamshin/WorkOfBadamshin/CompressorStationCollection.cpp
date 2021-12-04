@@ -7,7 +7,7 @@
 size_t CompressorStation::maxIdCS = 0;
 
 // Добавление компрессорной станции в список
-void CompressorStationCollection::AddCS()
+void CompressorStationCollection::Add()
 {
 	CompressorStation compressorStation;
 	csCollection.emplace(compressorStation.id, compressorStation);
@@ -15,7 +15,7 @@ void CompressorStationCollection::AddCS()
 
 
 // Редактирование компрессорной станции
-void CompressorStationCollection::ChangeCS()
+void CompressorStationCollection::Change()
 {
 	size_t changeId;
 	bool query;
@@ -50,7 +50,7 @@ void CompressorStationCollection::ChangeCS()
 
 
 // Вывод таблицы компрессорных станций на экран
-void CompressorStationCollection::PrintTableCS()
+void CompressorStationCollection::PrintTable()
 {
 	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 172;
 	Console::PrintTitleText("\n\t\t\t\tТаблица КС");
@@ -65,14 +65,14 @@ void CompressorStationCollection::PrintTableCS()
 }
 
 // Вывод таблицы компрессорных станций на экран, при этом функция вывод любой вектор КС
-void CompressorStationCollection::PrintFilterTableCS()
+void CompressorStationCollection::PrintFilterTable(std::vector<size_t>& vectorId)
 {
 	int tabulation_20 = 20, tabulation_30 = 30, tableWidth = 172;
 	Console::PrintTitleText("\n\t\t\t\tТаблица КС");
 	Console::PrintChar('-', tableWidth);
 	std::cout << "|" << std::setw(tabulation_20) << "ID" << std::setw(tabulation_30 + 1) << "NAME" << std::setw(tabulation_30) << "CountWorkShops" << std::setw(tabulation_30 + 10) << "CountWorkShopsInOperation" << std::setw(tabulation_30) << "EFFECTIVENESS" << std::setw(tabulation_20) << "|" << std::endl;
 	Console::PrintChar('-', tableWidth);
-	for (const auto& id : vectorIdForFilter)
+	for (const auto& id : vectorId)
 	{
 		std::cout << "|" << std::setw(tabulation_20) << csCollection[id].id << std::setw(tabulation_30 + 1) << csCollection[id].name << std::setw(tabulation_30) << csCollection[id].countWorkShops << std::setw(tabulation_30 + 10) << csCollection[id].countWorkShopsInOperation << std::setw(tabulation_30) << csCollection[id].effectiveness << std::setw(tabulation_20) << "|" << std::endl;
 	}
@@ -124,7 +124,7 @@ void CompressorStationCollection::DownloadFromFile(std::ifstream& fin)
 }
 
 // Фильтр КС
-void CompressorStationCollection::FilterCS()
+void CompressorStationCollection::Filter()
 {
 	char command;
 	std::cout << "\n\nВыберите пункт меню для фильтрации:" << std::endl
@@ -190,7 +190,7 @@ void CompressorStationCollection::FilterCS()
 }
 
 // Удаление КС
-void CompressorStationCollection::DeleteCS()
+void CompressorStationCollection::Delete()
 {
 	if (csCollection.empty())
 	{
@@ -223,11 +223,11 @@ void CompressorStationCollection::DeleteCS()
 	}
 	else // Пакетное удаление
 	{
-		FilterCS();
+		Filter();
 		if (!vectorIdForFilter.empty())
 		{
 			std::cout << "\n\nКС, полученные после фильтрации:" << std::endl;
-			PrintFilterTableCS();
+			PrintFilterTable(vectorIdForFilter);
 			query = verification::GetBoolValue("\nЕсли хотите удалить все отфильтрованные КС, нажмите \"y\", если часть из них, то нажмите \"n\": ",
 				"\nНеизвестная команда! Повторите ввод по указанным выше правилам!!!");
 			if (query) // Удалить все отфильтрованные КС
@@ -263,7 +263,7 @@ void CompressorStationCollection::DeleteCS()
 }
 
 // Пакетное редактирование КС
-void CompressorStationCollection::BatchChangeCS()
+void CompressorStationCollection::BatchChange()
 {
 	if (csCollection.empty())
 	{
@@ -277,10 +277,10 @@ void CompressorStationCollection::BatchChangeCS()
 	// Редактирование части КС
 	if (!query)
 	{
-		FilterCS();
+		Filter();
 		if (!vectorIdForFilter.empty())
 		{
-			PrintFilterTableCS();
+			PrintFilterTable(vectorIdForFilter);
 			query = verification::GetBoolValue("\nНажмите на \"y\", если хотите отредактировать все отфильтрованные КС, на \"n\", если хотите отредактировать только часть: ",
 				"\nНеизвестная команда! Повторите ввод по указанным правилам!!!");
 			if (query) // Редактирование всех отфильтрованных КС
@@ -322,14 +322,14 @@ void CompressorStationCollection::BatchChangeCS()
 	}
 	else // Редактирование всех КС
 	{
-		PrintTableCS();
+		PrintTable();
 		for (auto& el : csCollection)
 		{
 			std::cout << "\n\nКомпрессорная станция под id " << el.first << " имеет общее количество цехов: " << el.second.countWorkShops << std::endl
 				<< "Количество цехов в работе: " << el.second.countWorkShopsInOperation << std::endl;
 			el.second.countWorkShopsInOperation = verification::GetNumericValue<size_t>("Введите новое количество цехов в работе для данной КС (оно не должно превышать общее количество цехов): ",
 				"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 0, el.second.countWorkShops);
-			Console::PrintErrorText("Компрессорная станция с id - " + std::to_string(el.first) + " не была найдена в списке отфильтрованных КС");
+			Console::PrintTitleText("Компрессорная станция с id - " + std::to_string(el.first) + " была отредактирована");
 		}
 		Console::PrintTitleText("\n\nКС отредактированы!");
 	}

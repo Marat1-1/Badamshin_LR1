@@ -4,7 +4,7 @@
 
 
 // Инициализация КС
-CompressorStation::CompressorStation()
+CompressorStation::CompressorStation() : used(false), countInUse(0)
 {
 	maxIdCS++;
 	this->id = maxIdCS;
@@ -22,7 +22,7 @@ CompressorStation::CompressorStation()
 }
 
 // Считывание из файла
-CompressorStation::CompressorStation(std::ifstream& fin)
+CompressorStation::CompressorStation(std::ifstream& fin) : used(false)
 {
 	fin >> this->id;
 	fin.ignore(10000, '\n');
@@ -48,4 +48,33 @@ void CompressorStation::SaveToFile(std::ofstream& fout)
 		<< countWorkShops << std::endl
 		<< countWorkShopsInOperation << std::endl
 		<< effectiveness << std::endl;
+}
+
+// Получить значение максимального id
+size_t CompressorStation::GetMaxID()
+{
+	return maxIdCS;
+}
+
+// Инкремент countInUse
+void CompressorStation::IncCountUse()
+{
+	if (countInUse < countWorkShops)
+		++countInUse;
+	if (countInUse == countWorkShops)
+		used = true;
+}
+
+// Декремент countInUse
+void CompressorStation::DecCountUse()
+{
+	if (countInUse > 0)
+		--countInUse;
+	if (countInUse < countWorkShops)
+		used = false;
+}
+
+bool CompressorStation::IsUsed() const
+{
+	return used;
 }

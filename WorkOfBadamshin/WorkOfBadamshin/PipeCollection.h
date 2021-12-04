@@ -1,28 +1,27 @@
 #include <unordered_map>
 #include <vector>
-#include <fstream>
 #include "ClassPipe.h"
-#include "Console.h"
+#include "Collection.h"
 
 #ifndef PIPECOLLECTION_H
 #define PIPECOLLECTION_H
 
-class PipeCollection
+class PipeCollection : public Collection
 {
-private:
-	std::unordered_map<size_t,Pipe> pipeCollection;
+protected:
+	std::unordered_map<size_t, Pipe> pipeCollection;
 	std::vector<size_t> vectorIdForFilter;
-	void PrintFilterTablePipes();
-	void FilterPipe();
 public:
-	void AddPipe();
-	void ChangePipe();
-	void PrintTablePipes();
+	void Add();
+	void Change();
+	void Filter();
+	void PrintTable();
+	void PrintFilterTable(std::vector<size_t>&);
 	void SaveToFile(std::ofstream&);
 	void DownloadFromFile(std::ifstream&);
-	void DeletePipe();
-	void BatchChangePipe();
-	void AttachPipe();
+	void Delete();
+	void BatchChange();
+	friend class GasTransmissionNetwork;
 };
 
 #endif // !PIPECOLLECTION_H
