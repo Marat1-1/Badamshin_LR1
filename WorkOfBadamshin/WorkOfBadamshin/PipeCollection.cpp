@@ -183,7 +183,7 @@ void PipeCollection::Delete()
 						pipeCollection.erase(i);
 					else
 						Console::PrintErrorText("\nТруба c id " + std::to_string(i) + " не может быть удалена, т.к.она учавствует в связи.");
-				Console::PrintTitleText("\nОстальные трубы были успешно удалены!");
+				Console::PrintTitleText("\nТрубы были успешно удалены!");
 			}
 			else // Удалить часть отфильтрованных труб
 			{

@@ -1,6 +1,5 @@
 #include "CompressorStationCollection.h"
 #include "PipeCollection.h"
-#include <set>
 
 
 
@@ -12,8 +11,9 @@ class GasTransmissionNetwork
 private:
 	PipeCollection newPipeCollection;
 	CompressorStationCollection newCSCollection;
-	std::set<size_t> freePipes;
-	std::set<size_t> freeCS;
+	std::vector<size_t> sortIdCS;
+	std::unordered_map<size_t, CompressorStation> mapCSInUse;
+	std::unordered_map<size_t, Pipe> mapPipeInUse;
 	void printMenu();
 	void printFreePipes();
 	void printFreeCS();
@@ -21,6 +21,11 @@ private:
 	bool checkFreePipes();
 	bool checkFreeCS();
 	bool checkingConnections();
+	void findCSZeroDegreeOfOutcome(std::unordered_map<size_t, CompressorStation>&, std::unordered_map<size_t, Pipe>&);
+	void fillMapCSInUSe();
+	void fillMapPipeInUse();
+	void sortGraph();
+	void printSortGraph();
 public:
 	// Методы управления сетью
 	void manageNetwork();

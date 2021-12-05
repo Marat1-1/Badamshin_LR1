@@ -4,7 +4,7 @@
 
 
 // Инициализация КС
-CompressorStation::CompressorStation() : used(false), countInUse(0)
+CompressorStation::CompressorStation() : fullyField(false), degreeOfOutcome(0), degreeOfEntry(0)
 {
 	maxIdCS++;
 	this->id = maxIdCS;
@@ -22,7 +22,7 @@ CompressorStation::CompressorStation() : used(false), countInUse(0)
 }
 
 // Считывание из файла
-CompressorStation::CompressorStation(std::ifstream& fin) : used(false)
+CompressorStation::CompressorStation(std::ifstream& fin) : fullyField(false), degreeOfOutcome(0), degreeOfEntry(0)
 {
 	fin >> this->id;
 	fin.ignore(10000, '\n');
@@ -56,25 +56,61 @@ size_t CompressorStation::GetMaxID()
 	return maxIdCS;
 }
 
-// Инкремент countInUse
-void CompressorStation::IncCountUse()
+// Инкремент degreeOfOutcome
+void CompressorStation::IncDegreeOfOutcome()
 {
-	if (countInUse < countWorkShops)
-		++countInUse;
-	if (countInUse == countWorkShops)
-		used = true;
+	if (degreeOfEntry + degreeOfOutcome < countWorkShops)
+		++degreeOfOutcome;
+	if (degreeOfEntry + degreeOfOutcome == countWorkShops)
+		fullyField = true;
 }
 
-// Декремент countInUse
-void CompressorStation::DecCountUse()
+// Инкремент degreeOfEntry
+void CompressorStation::IncDegreeOfEntry()
 {
-	if (countInUse > 0)
-		--countInUse;
-	if (countInUse < countWorkShops)
-		used = false;
+	if (degreeOfEntry + degreeOfOutcome < countWorkShops)
+		++degreeOfEntry;
+	if (degreeOfEntry + degreeOfOutcome == countWorkShops)
+		fullyField = true;
 }
 
+// Декремент degreeOfOutcome
+void CompressorStation::DecDegreeOfOutcome()
+{
+	if (degreeOfOutcome > 0)
+		--degreeOfOutcome;
+	if (degreeOfEntry + degreeOfOutcome < countWorkShops)
+		fullyField = false;
+}
+
+// Декремент degreeOfEntry
+void CompressorStation::DecDegreeOfEntry()
+{
+	if (degreeOfEntry > 0)
+		--degreeOfEntry;
+	if (degreeOfEntry + degreeOfOutcome < countWorkShops)
+		fullyField = false;
+}
+
+// Получить значения степеней исхода и захода
+size_t CompressorStation::GetDegreeOfOutcome() const
+{
+	return degreeOfOutcome;
+}
+
+size_t CompressorStation::GetDegreeOfEntry() const
+{
+	return degreeOfEntry;
+}
+
+// Заполнены ли входы и выходы трубами у КС
+bool CompressorStation::IsFullyField() const
+{
+	return fullyField;
+}
+
+// Используется ли КС
 bool CompressorStation::IsUsed() const
 {
-	return used;
+	return degreeOfOutcome > 0 || degreeOfEntry > 0;
 }

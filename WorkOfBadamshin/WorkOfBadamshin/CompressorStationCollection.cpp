@@ -206,19 +206,20 @@ void CompressorStationCollection::Delete()
 		std::cout << "\n\nВсего КС: " << csCollection.size() << std::endl
 			<< "Id доступные для удаления: ";
 		for (const auto& el : csCollection)
-			std::cout << el.first << "  ";
+			if (!el.second.IsUsed())
+				std::cout << el.first << "  ";
 		std::set<size_t> setIdForDelete = verification::GetMultipleNumericValues<size_t>(
 			"\nВведите через пробел id КС, которые хотели бы удалить: ",
 			"\nОшибка, вы ввели недопустимый формат, повторите ввод заново!");
 		for (const auto id : setIdForDelete)
 		{
-			if (csCollection.find(id) != csCollection.end())
+			if (csCollection.find(id) != csCollection.end() && !(*csCollection.find(id)).second.IsUsed())
 			{
 				csCollection.erase(id);
 				Console::PrintTitleText("Компрессорная станция с id = " + std::to_string(id) + " была удалена!\n");
 			}
 			else
-				Console::PrintErrorText("Компрессорная станция с id = " + std::to_string(id) + " не была найдена в списке всех КС!\n");
+				Console::PrintErrorText("Компрессорная станция с id = " + std::to_string(id) + " не была найдена в списке доступных КС для удаления!\n");
 		}
 	}
 	else // Пакетное удаление
@@ -233,8 +234,11 @@ void CompressorStationCollection::Delete()
 			if (query) // Удалить все отфильтрованные КС
 			{
 				for (const auto i : vectorIdForFilter)
-					csCollection.erase(i);
-				Console::PrintTitleText("\n\nКС Успешно удалены!");
+					if (!csCollection[i].IsUsed())
+						csCollection.erase(i);
+					else
+						Console::PrintErrorText("\nКС с id - " + std::to_string(i) + " не может быть удалена, т.к. она используется в газотранспортной сети");
+				Console::PrintTitleText("\n\nКС были успешно удалены!");
 			}
 			else // Удаление части из отфильтрованных КС
 			{
@@ -244,13 +248,13 @@ void CompressorStationCollection::Delete()
 				for (auto id : setIdForDelete)
 				{
 					auto it = std::find(vectorIdForFilter.begin(), vectorIdForFilter.end(), id);
-					if (it != vectorIdForFilter.end())
+					if (it != vectorIdForFilter.end() && !csCollection[id].IsUsed())
 					{
 						csCollection.erase(id);
 						Console::PrintTitleText("Компрессорная станция с id = " + std::to_string(id) + " была удалена!\n");
 					}
 					else
-						Console::PrintErrorText("Компрессорная станция с id = " + std::to_string(id) + " не была найдена в списке отфильтрованных КС!\n");
+						Console::PrintErrorText("Компрессорная станция с id = " + std::to_string(id) + " не была найдена в списке отфильтрованных КС или же указанная КС используется в Газотранспортной сети!\n");
 				}
 			}
 			vectorIdForFilter.clear();

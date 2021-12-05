@@ -11,6 +11,7 @@ void GasTransmissionNetwork::printMenu()
 	std::cout << "\nВыберите один из пунктов меню: " << std::endl
 		<< "1. Добавить связи" << std::endl
 		<< "2. Удалить связи" << std::endl
+		<< "3. Отсортировать граф" << std::endl
 		<< "0. Выйти в общее меню" << std::endl
 		<< "Ввод: ";
 }
@@ -29,7 +30,7 @@ void GasTransmissionNetwork::printFreeCS()
 {
 	std::vector<size_t> vectorForOutput;
 	for (const auto& el : newCSCollection.csCollection)
-		if (!el.second.IsUsed())
+		if (!el.second.IsFullyField())
 			vectorForOutput.push_back(el.first);
 	newCSCollection.PrintFilterTable(vectorForOutput);
 }
@@ -46,7 +47,7 @@ bool GasTransmissionNetwork::checkFreePipes()
 bool GasTransmissionNetwork::checkFreeCS()
 {
 	for (const auto& el : newCSCollection.csCollection)
-		if (!el.second.IsUsed())
+		if (!el.second.IsFullyField())
 			return true;
 	return false;
 }
@@ -72,6 +73,83 @@ void GasTransmissionNetwork::printTableConnections()
 		if (el.second.IsUsed())
 			std::cout << "|" << std::setw(tabulation_20) << el.first << std::setw(tabulation_30) << el.second.GetOutId() << std::setw(tabulation_30) << el.second.GetInId() << std::setw(tabulation_20) << "|" << std::endl;
 	Console::PrintChar('-', tableWidth);
+}
+
+// Заполнение мапов труб и КС для графа
+void GasTransmissionNetwork::fillMapCSInUSe()
+{
+	mapCSInUse.clear();
+	for (const auto& el : newCSCollection.csCollection)
+		if (el.second.IsUsed())
+			mapCSInUse.emplace(el.first, el.second);
+}
+
+void GasTransmissionNetwork::fillMapPipeInUse()
+{
+	mapPipeInUse.clear();
+	for (const auto& el : newPipeCollection.pipeCollection)
+		if (el.second.IsUsed())
+			mapPipeInUse.emplace(el.first, el.second);
+}
+
+// Рекурсивный метод поиска элемента с нулевой степенью захода и заполнения вектора отсортированных id
+void GasTransmissionNetwork::findCSZeroDegreeOfOutcome(std::unordered_map<size_t, CompressorStation>& mapCS, std::unordered_map<size_t, Pipe>& mapPipe)
+{
+	size_t counter = 0;
+	std::vector<size_t> idDelCS;
+	std::vector<size_t> idDelPipe;
+	for (const auto& elCS : mapCS)
+		if (elCS.second.GetDegreeOfEntry() == 0)
+		{
+			++counter;
+			idDelCS.push_back(elCS.first);
+			sortIdCS.push_back(elCS.first);
+			for (const auto& elPipe : mapPipe)
+				if (elPipe.second.GetOutId() == elCS.first)
+				{
+					idDelPipe.push_back(elPipe.first);
+				}
+		}
+	for (const auto& id : idDelCS)
+		mapCS.erase(id);
+	for (const auto& id : idDelPipe)
+	{
+		(*mapCS.find((*mapPipe.find(id)).second.GetInId())).second.DecDegreeOfEntry();
+		mapPipe.erase(id);
+	}
+	idDelCS.clear();
+	idDelPipe.clear();
+	if (counter == 0)
+		throw - 1;
+	if (mapCS.empty() && mapPipe.empty())
+		return;
+	findCSZeroDegreeOfOutcome(mapCS, mapPipe);
+}
+
+// Вывод отсортированного графа
+void GasTransmissionNetwork::printSortGraph()
+{
+	for (auto id : sortIdCS)
+	{
+		std::cout << id << "  ";
+	}
+}
+
+// Сортировка графа
+void GasTransmissionNetwork::sortGraph()
+{
+	sortIdCS.clear();
+	fillMapCSInUSe();
+	fillMapPipeInUse();
+	try
+	{
+		findCSZeroDegreeOfOutcome(mapCSInUse, mapPipeInUse);
+		printSortGraph();
+	}
+	catch (int)
+	{
+		Console::PrintErrorText("\nТопологическая сортировка невозможна, поскольку граф является цикличным!!!");
+	}
 }
 
 // Функция управления Газотранспортной сетью
@@ -109,19 +187,19 @@ void GasTransmissionNetwork::manageNetwork()
 					{
 						outId = verification::GetNumericValue<size_t>("\nВведите id КС из которой будет исходить указанная труба: ",
 							"\nНекорректный ввод! Id целое положительное число, при этом КС с таким id должна быть создана, повторите ввод!", 1, CompressorStation::GetMaxID());
-						if (newCSCollection.csCollection.find(outId) != newCSCollection.csCollection.end() && !(*newCSCollection.csCollection.find(outId)).second.IsUsed())
+						if (newCSCollection.csCollection.find(outId) != newCSCollection.csCollection.end() && !(*newCSCollection.csCollection.find(outId)).second.IsFullyField())
 						{
 							while (true)
 							{
 								inId = verification::GetNumericValue<size_t>("\nВведите id КС в которую будет входить указанная труба: ",
 									"\nНекорректный ввод! Id целое положительное число, при этом КС с таким id должна быть создана, повторите ввод!", 1, CompressorStation::GetMaxID());
-								if (inId != outId && newCSCollection.csCollection.find(inId) != newCSCollection.csCollection.end() && !(*newCSCollection.csCollection.find(inId)).second.IsUsed())
+								if (inId != outId && newCSCollection.csCollection.find(inId) != newCSCollection.csCollection.end() && !(*newCSCollection.csCollection.find(inId)).second.IsFullyField())
 								{
 									newPipeCollection.pipeCollection[idPipe].SetInId(inId);
 									newPipeCollection.pipeCollection[idPipe].SetOutId(outId);
 									newPipeCollection.pipeCollection[idPipe].SetUsed(true);
-									newCSCollection.csCollection[inId].IncCountUse();
-									newCSCollection.csCollection[outId].IncCountUse();
+									newCSCollection.csCollection[inId].IncDegreeOfEntry();
+									newCSCollection.csCollection[outId].IncDegreeOfOutcome();
 									Console::PrintTitleText("Связь была создана!");
 									break;
 								}
@@ -175,8 +253,8 @@ void GasTransmissionNetwork::manageNetwork()
 					"\nНекорректный ввод! Id целое положительное число, при этом труба с таким id должна быть создана, повторите ввод!", 1, Pipe::GetMaxID());
 				if (newPipeCollection.pipeCollection.find(idPipe) != newPipeCollection.pipeCollection.end() && (*newPipeCollection.pipeCollection.find(idPipe)).second.IsUsed())
 				{
-					(*newCSCollection.csCollection.find((*newPipeCollection.pipeCollection.find(idPipe)).second.GetOutId())).second.DecCountUse();
-					(*newCSCollection.csCollection.find((*newPipeCollection.pipeCollection.find(idPipe)).second.GetInId())).second.DecCountUse();
+					(*newCSCollection.csCollection.find((*newPipeCollection.pipeCollection.find(idPipe)).second.GetOutId())).second.DecDegreeOfOutcome();
+					(*newCSCollection.csCollection.find((*newPipeCollection.pipeCollection.find(idPipe)).second.GetInId())).second.DecDegreeOfEntry();
 					(*newPipeCollection.pipeCollection.find(idPipe)).second.SetInId(0);
 					(*newPipeCollection.pipeCollection.find(idPipe)).second.SetOutId(0);
 					(*newPipeCollection.pipeCollection.find(idPipe)).second.SetUsed(false);
@@ -198,6 +276,13 @@ void GasTransmissionNetwork::manageNetwork()
 					break;
 			}
 			std::cout << std::endl;
+			system("pause");
+			system("CLS");
+			break;
+		}
+		case '3':
+		{
+			sortGraph();
 			system("pause");
 			system("CLS");
 			break;
