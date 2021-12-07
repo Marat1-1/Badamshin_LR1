@@ -4,7 +4,7 @@
 
 
 // Инициализация КС
-CompressorStation::CompressorStation() : fullyField(false), degreeOfOutcome(0), degreeOfEntry(0)
+CompressorStation::CompressorStation() : fullyField(false)
 {
 	maxIdCS++;
 	this->id = maxIdCS;
@@ -22,14 +22,17 @@ CompressorStation::CompressorStation() : fullyField(false), degreeOfOutcome(0), 
 }
 
 // Считывание из файла
-CompressorStation::CompressorStation(std::ifstream& fin) : fullyField(false), degreeOfOutcome(0), degreeOfEntry(0)
+CompressorStation::CompressorStation(std::ifstream& fin) : fullyField(false)
 {
 	fin >> this->id;
 	fin.ignore(10000, '\n');
 	getline(fin, this->name);
 	fin >> this->countWorkShops
 		>> this->countWorkShopsInOperation
-		>> this->effectiveness;
+		>> this->effectiveness
+		>> this->degreeOfEntry
+		>> this->degreeOfOutcome
+		>> this->fullyField;
 }
 
 // Редактирование КС
@@ -47,7 +50,10 @@ void CompressorStation::SaveToFile(std::ofstream& fout)
 		<< name << std::endl
 		<< countWorkShops << std::endl
 		<< countWorkShopsInOperation << std::endl
-		<< effectiveness << std::endl;
+		<< effectiveness << std::endl
+		<< degreeOfEntry << std::endl
+		<< degreeOfOutcome << std::endl
+		<< fullyField << std::endl;
 }
 
 // Получить значение максимального id

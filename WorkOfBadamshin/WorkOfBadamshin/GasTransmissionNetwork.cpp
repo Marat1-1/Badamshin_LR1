@@ -12,6 +12,7 @@ void GasTransmissionNetwork::printMenu()
 		<< "1. Добавить связи" << std::endl
 		<< "2. Удалить связи" << std::endl
 		<< "3. Отсортировать граф" << std::endl
+		<< "4. Вывести таблицу связей" << std::endl
 		<< "0. Выйти в общее меню" << std::endl
 		<< "Ввод: ";
 }
@@ -93,7 +94,7 @@ void GasTransmissionNetwork::fillMapPipeInUse()
 }
 
 // Рекурсивный метод поиска элемента с нулевой степенью захода и заполнения вектора отсортированных id
-void GasTransmissionNetwork::findCSZeroDegreeOfOutcome(std::unordered_map<size_t, CompressorStation>& mapCS, std::unordered_map<size_t, Pipe>& mapPipe)
+void GasTransmissionNetwork::findCSZeroDegreeOfOutcome(std::unordered_map<size_t, CompressorStation> mapCS, std::unordered_map<size_t, Pipe> mapPipe)
 {
 	size_t counter = 0;
 	std::vector<size_t> idDelCS;
@@ -126,13 +127,28 @@ void GasTransmissionNetwork::findCSZeroDegreeOfOutcome(std::unordered_map<size_t
 	findCSZeroDegreeOfOutcome(mapCS, mapPipe);
 }
 
+// Вывод неотсортированного графа
+void GasTransmissionNetwork::printGraph()
+{
+	Console::PrintTitleText("\n\nНеотсортированный граф:");
+	Console::PrintChar('-', mapCSInUse.size() * 20 + 1);
+	std::cout << "|";
+	for (const auto& el : mapCSInUse)
+		std::cout << std::setw(10) << el.first << std::setw(10) << "|";
+	std::cout << std::endl;
+	Console::PrintChar('-', mapCSInUse.size() * 20 + 1);
+}
+
 // Вывод отсортированного графа
 void GasTransmissionNetwork::printSortGraph()
 {
-	for (auto id : sortIdCS)
-	{
-		std::cout << id << "  ";
-	}
+	Console::PrintTitleText("\n\nОтсортированный граф:");
+	Console::PrintChar('-', mapCSInUse.size() * 20 + 1);
+	std::cout << "|";
+	for (const auto& id : sortIdCS)
+		std::cout << std::setw(10) << id << std::setw(10) << "|";
+	std::cout << std::endl;
+	Console::PrintChar('-', mapCSInUse.size() * 20 + 1);
 }
 
 // Сортировка графа
@@ -144,6 +160,7 @@ void GasTransmissionNetwork::sortGraph()
 	try
 	{
 		findCSZeroDegreeOfOutcome(mapCSInUse, mapPipeInUse);
+		printGraph();
 		printSortGraph();
 	}
 	catch (int)
@@ -283,6 +300,13 @@ void GasTransmissionNetwork::manageNetwork()
 		case '3':
 		{
 			sortGraph();
+			system("pause");
+			system("CLS");
+			break;
+		}
+		case '4':
+		{
+			printTableConnections();
 			system("pause");
 			system("CLS");
 			break;

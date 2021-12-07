@@ -16,24 +16,25 @@ void PipeCollection::Add()
 // Редактирование трубы
 void PipeCollection::Change()
 {
-	size_t changeId;
-	bool query;
-	std::cout << "Всего добавлено труб: " << pipeCollection.size() << std::endl
-		<< "Id доступные для редактирования: ";
-	for (const auto& el : pipeCollection)
-		std::cout << el.first << "  ";
-	std::cout << std::endl;
 	if (pipeCollection.empty())
 	{
 		Console::PrintErrorText("Вы не добавили ни одной трубы, редактирование недоступно!");
 		verification::GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
 		return;
 	}
+	size_t changeId;
+	bool query;
+	std::cout << "Всего добавлено труб: " << pipeCollection.size() << std::endl
+		<< "Id доступные для редактирования: ";
+	for (const auto& el : pipeCollection)
+		if (!el.second.IsUsed())
+			std::cout << el.first << "  ";
+	std::cout << std::endl;
 	while (true)
 	{
-		changeId = verification::GetNumericValue<size_t>("\nВведите номер id трубы, которую вы бы хотели редактировать: ",
+		changeId = verification::GetNumericValue<size_t>("\nВведите id трубы из доступных, которую вы бы хотели редактировать: ",
 			"Ошибка! Вы ввели недопустимое значение, возможно вы ввели несуществующий id или же произвели некорректный ввод, помните id это положительное, целое число!!!", 1, Pipe::maxIdPipe);
-		if (pipeCollection.find(changeId) != pipeCollection.end())
+		if (pipeCollection.find(changeId) != pipeCollection.end() && !(*pipeCollection.find(changeId)).second.IsUsed())
 		{
 			std::cout << "Изначальное состояние трубы: "
 				<< (pipeCollection[changeId].repair ? "в ремонте" : "не в ремонте")
@@ -41,7 +42,7 @@ void PipeCollection::Change()
 			pipeCollection[changeId].GhangePipe();
 		}
 		else
-			Console::PrintErrorText("По указанному id не найдено ни одной трубы!!!");
+			Console::PrintErrorText("По указанному id не найдено ни свободной для редактирования трубы!!!");
 		query = verification::GetBoolValue("\n\nХотите ли вы продолжить редактировать трубы, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
 			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!");
 		if (!query)
@@ -232,7 +233,7 @@ void PipeCollection::BatchChange()
 			PrintFilterTable(vectorIdForFilter);
 			query = verification::GetBoolValue("\nНажмите на \"y\", если хотите редактировать все отфильтрованные трубы, на \"n\", если только определённое подмножество: ",
 				"\nОшибка!!! Вы нажали на некорректную кнопку, осуществите ввод по указанным вам правилам!!!");
-			if (!query) // Редактировать все отфильтрованные трубы
+			if (!query) // Отредактировать часть отфильтрованных труб
 			{
 				std::set<size_t> setIdForChange = verification::GetMultipleNumericValues<size_t>(
 					"\nВведите через пробел id труб, которые хотели бы отредактировать: ",
@@ -242,21 +243,24 @@ void PipeCollection::BatchChange()
 				for (const auto id : setIdForChange)
 				{
 					auto it = std::find(vectorIdForFilter.begin(), vectorIdForFilter.end(), id);
-					if (it != vectorIdForFilter.end())
+					if (it != vectorIdForFilter.end() && !(*pipeCollection.find(id)).second.IsUsed())
 					{
 						pipeCollection[id].repair = repairStatus;
 						Console::PrintTitleText("Труба с id - " + std::to_string(id) + " была отредактирована");
 					}
 					else
-						Console::PrintErrorText("Труба с id - " + std::to_string(id) + " не была найдена в списке отфильтрованных труб\n");
+						Console::PrintErrorText("Труба с id - " + std::to_string(id) + " не была найдена в списке отфильтрованных труб или же труба находится в Газотранспортной сети, редактирование недоступно\n");
 				}
 			}
-			else // Отредактировать часть отфильтрованных труб
+			else // Редактировать все отфильтрованные трубы
 			{
 				repairStatus = verification::GetBoolValue("\n\nУкажите новое состояние для выбранных труб, если в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
 					"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!");
 				for (const auto& i : vectorIdForFilter)
-					pipeCollection[i].repair = repairStatus;
+					if (!pipeCollection[i].IsUsed())
+						pipeCollection[i].repair = repairStatus;
+					else
+						Console::PrintErrorText("\nТруба с id " + std::to_string(i) + " не может быть отредактирована, поскольку она находится в Газотранспортной сети.");
 				Console::PrintTitleText("\nТрубы отредактированы!");
 			}
 		}
@@ -270,7 +274,10 @@ void PipeCollection::BatchChange()
 		repairStatus = verification::GetBoolValue("\n\nУкажите новое состояние для выбранных труб, если в ремонте, то нажмите \"y\" на клавиатуре, если же нет, кликните по \"n\": ",
 			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!");
 		for (auto& el : pipeCollection)
-			el.second.repair = repairStatus;
+			if (!el.second.IsUsed())
+				el.second.repair = repairStatus;
+			else
+				Console::PrintErrorText("\nТруба с id " + std::to_string(el.first) + " не может быть отредактирована, т.к. она находится в Газотранспортной сети.");
 		Console::PrintTitleText("\nТрубы отредактированы!");
 	}
 	system("pause");

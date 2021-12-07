@@ -21,7 +21,7 @@ Pipe::Pipe() : used(false)
 // Считывание из файла
 Pipe::Pipe(std::ifstream& fin) : used(false)
 {
-	fin >> this->id >> this->length >> this->diameter >> this->repair;
+	fin >> this->id >> this->length >> this->diameter >> this->repair >> this->outId >> this->inId >> this->used;
 }
 
 // Редактирование Трубы
@@ -37,7 +37,10 @@ void Pipe::SaveToFile(std::ofstream& fout)
 	fout << id << std::endl
 		<< length << std::endl
 		<< diameter << std::endl
-		<< repair << std::endl;
+		<< repair << std::endl
+		<< outId << std::endl
+		<< inId << std::endl
+		<< used << std::endl;
 }
 
 // Установить InId и OutId

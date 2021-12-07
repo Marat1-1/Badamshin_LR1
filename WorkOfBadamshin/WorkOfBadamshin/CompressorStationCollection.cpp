@@ -17,30 +17,33 @@ void CompressorStationCollection::Add()
 // Редактирование компрессорной станции
 void CompressorStationCollection::Change()
 {
-	size_t changeId;
-	bool query;
-	std::cout << "Всего добавлено компрессорных станций: " << csCollection.size() << std::endl
-		<< "Id доступные для редактирования: ";
-	for (const auto& el : csCollection)
-		std::cout << el.first << "  ";
-	std::cout << std::endl;
 	if (csCollection.empty())
 	{
 		Console::PrintErrorText("Вы не добавили ни одной компрессорной станции, редактирование недоступно!");
 		verification::GetPressEscape("\n\nЧтобы выйти в меню, нажмите ESC: ", "\nКоманда не распознана, нажмите ESC на клавиатуре, если хотите вернуться в меню!");
 		return;
 	}
+	size_t changeId;
+	bool query;
+	std::cout << "Всего добавлено компрессорных станций: " << csCollection.size() << std::endl
+		<< "Id доступные для редактирования: ";
+	for (const auto& el : csCollection)
+		if (!el.second.IsUsed())
+			std::cout << el.first << "  ";
+	std::cout << std::endl;
 	while (true)
 	{
 		changeId = verification::GetNumericValue<size_t>("\nВведите номер (id) компрессорной станции, которую вы бы хотели редактировать: ",
 			"Ошибка! Вы ввели недопустимое значение, возможно вы ввели несуществующий id или же произвели некорректный ввод, помните id это положительное, целое число!!!",
 			1, CompressorStation::maxIdCS);
-		if (csCollection.find(changeId) != csCollection.end())
+		if (csCollection.find(changeId) != csCollection.end() && !(*csCollection.find(changeId)).second.IsUsed())
 		{
 			std::cout << "Количество цехов у данной компрессорной станции: " << csCollection[changeId].countWorkShops << std::endl;
 			std::cout << "Количество цехов в работе у данной компрессорной станции: " << csCollection[changeId].countWorkShopsInOperation << std::endl;
 			csCollection[changeId].ChangeCS();
 		}
+		else
+			Console::PrintErrorText("По указанному id не найдено ни свободной для редактирования КС!!!");
 		query = verification::GetBoolValue("\n\nХотите ли вы продолжить редактировать компрессоные станции, если да, то кликните \"y\", если же нет, то нажмите на \"n\": ",
 			"\nНеизвестная команда! Повторите ввод по указанным выше правилам, кликните по \"y\", если да, по \"n\", если нет!!!");
 		if (query != true)
@@ -291,11 +294,16 @@ void CompressorStationCollection::BatchChange()
 			{
 				for (const auto& i : vectorIdForFilter)
 				{
-					std::cout << "\n\nКомпрессорная станция под id " << csCollection[i].id << " имеет общее количество цехов: " << csCollection[i].countWorkShops << std::endl
-						<< "Количество цехов в работе: " << csCollection[i].countWorkShopsInOperation << std::endl;
-					csCollection[i].countWorkShopsInOperation = verification::GetNumericValue<size_t>("Введите новое количество цехов в работе для данной КС (оно не должно превышать общее количество цехов): ",
-						"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 0, csCollection[i].countWorkShops);
-					Console::PrintTitleText("Компрессорная станция с id - " + std::to_string(i) + " была отредактирована");
+					if (!csCollection[i].IsUsed())
+					{
+						std::cout << "\n\nКомпрессорная станция под id " << csCollection[i].id << " имеет общее количество цехов: " << csCollection[i].countWorkShops << std::endl
+							<< "Количество цехов в работе: " << csCollection[i].countWorkShopsInOperation << std::endl;
+						csCollection[i].countWorkShopsInOperation = verification::GetNumericValue<size_t>("Введите новое количество цехов в работе для данной КС (оно не должно превышать общее количество цехов): ",
+							"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 0, csCollection[i].countWorkShops);
+						Console::PrintTitleText("Компрессорная станция с id - " + std::to_string(i) + " была отредактирована");
+					}
+					else
+						Console::PrintErrorText("КС с id - " + std::to_string(i) + " не может быть отредактирована, поскольку она находится в Газотранспортной сети.");
 				}
 				Console::PrintTitleText("\n\nКС отредактированы!");
 			}
@@ -307,7 +315,7 @@ void CompressorStationCollection::BatchChange()
 				for (const auto id : setIdForChange)
 				{
 					auto it = std::find(vectorIdForFilter.begin(), vectorIdForFilter.end(), id);
-					if (it != vectorIdForFilter.end())
+					if (it != vectorIdForFilter.end() && !(*csCollection.find(id)).second.IsUsed())
 					{
 						std::cout << "\n\nКомпрессорная станция под id " << csCollection[id].id << " имеет общее количество цехов: " << csCollection[id].countWorkShops << std::endl
 							<< "Количество цехов в работе: " << csCollection[id].countWorkShopsInOperation << std::endl;
@@ -316,7 +324,7 @@ void CompressorStationCollection::BatchChange()
 						Console::PrintTitleText("Компрессорная станция с id - " + std::to_string(id) + " была отредактирована");
 					}
 					else
-						Console::PrintErrorText("Компрессорная станция с id - " + std::to_string(id) + " не была найдена в списке отфильтрованных КС");
+						Console::PrintErrorText("Компрессорная станция с id - " + std::to_string(id) + " не была найдена в списке отфильтрованных КС или же она находится в Газотранспортной сети, редактирование недоступно.");
 				}
 			}
 			vectorIdForFilter.clear();
@@ -329,11 +337,16 @@ void CompressorStationCollection::BatchChange()
 		PrintTable();
 		for (auto& el : csCollection)
 		{
-			std::cout << "\n\nКомпрессорная станция под id " << el.first << " имеет общее количество цехов: " << el.second.countWorkShops << std::endl
-				<< "Количество цехов в работе: " << el.second.countWorkShopsInOperation << std::endl;
-			el.second.countWorkShopsInOperation = verification::GetNumericValue<size_t>("Введите новое количество цехов в работе для данной КС (оно не должно превышать общее количество цехов): ",
-				"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 0, el.second.countWorkShops);
-			Console::PrintTitleText("Компрессорная станция с id - " + std::to_string(el.first) + " была отредактирована");
+			if (!el.second.IsUsed())
+			{
+				std::cout << "\n\nКомпрессорная станция под id " << el.first << " имеет общее количество цехов: " << el.second.countWorkShops << std::endl
+					<< "Количество цехов в работе: " << el.second.countWorkShopsInOperation << std::endl;
+				el.second.countWorkShopsInOperation = verification::GetNumericValue<size_t>("Введите новое количество цехов в работе для данной КС (оно не должно превышать общее количество цехов): ",
+					"Ошибка!!! Количество цехов это целое число, без посторонних символов, ввиде букв, точек, а также число не должно превышать общее количество цехов.", 0, el.second.countWorkShops);
+				Console::PrintTitleText("Компрессорная станция с id - " + std::to_string(el.first) + " была отредактирована");
+			}
+			else
+				Console::PrintErrorText("Труба с id - " + std::to_string(el.first) + " не может быть отредактирована, поскольку она находится в Газотранспортной сети");
 		}
 		Console::PrintTitleText("\n\nКС отредактированы!");
 	}

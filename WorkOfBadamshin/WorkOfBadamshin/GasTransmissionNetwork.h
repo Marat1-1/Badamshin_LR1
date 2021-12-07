@@ -21,9 +21,10 @@ private:
 	bool checkFreePipes();
 	bool checkFreeCS();
 	bool checkingConnections();
-	void findCSZeroDegreeOfOutcome(std::unordered_map<size_t, CompressorStation>&, std::unordered_map<size_t, Pipe>&);
+	void findCSZeroDegreeOfOutcome(std::unordered_map<size_t, CompressorStation>, std::unordered_map<size_t, Pipe>);
 	void fillMapCSInUSe();
 	void fillMapPipeInUse();
+	void printGraph();
 	void sortGraph();
 	void printSortGraph();
 public:

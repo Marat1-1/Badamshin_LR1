@@ -1,9 +1,9 @@
-#include <string>
-#include <fstream>
 
 
 #ifndef CLASS_CS_H
 #define CLASS_CS_H
+#include <string>
+#include <fstream>
 
 // Класс КС
 class CompressorStation
@@ -12,8 +12,8 @@ private:
 	size_t id;
 	static size_t maxIdCS; // максимальный id среди элементов
 	bool fullyField;
-	size_t degreeOfOutcome;
-	size_t degreeOfEntry;
+	size_t degreeOfOutcome = 0;
+	size_t degreeOfEntry = 0;
 public:
 	std::string name;
 	size_t countWorkShops;
