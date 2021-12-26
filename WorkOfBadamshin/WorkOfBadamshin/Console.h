@@ -1,6 +1,7 @@
 #include <iostream>
 #include <Windows.h>
 
+
 #ifndef CONSOLE_H
 #define CONSOLE_H
 

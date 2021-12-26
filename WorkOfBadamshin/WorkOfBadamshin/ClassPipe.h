@@ -1,7 +1,6 @@
 #include <string>
 #include <fstream>
 
-
 #ifndef CLASS_PIPE_H
 #define CLASS_PIPE_H
 

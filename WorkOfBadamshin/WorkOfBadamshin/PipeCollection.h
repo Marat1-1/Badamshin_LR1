@@ -6,6 +6,7 @@
 #ifndef PIPECOLLECTION_H
 #define PIPECOLLECTION_H
 
+
 class PipeCollection : public Collection
 {
 protected:

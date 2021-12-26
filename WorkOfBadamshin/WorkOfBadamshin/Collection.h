@@ -2,6 +2,7 @@
 
 #ifndef COLLECTION_H
 #define COLLECTION_H
+
 class Collection
 {
 public:

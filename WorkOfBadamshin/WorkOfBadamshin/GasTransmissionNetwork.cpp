@@ -13,6 +13,7 @@ void GasTransmissionNetwork::printMenu()
 		<< "2. Удалить связи" << std::endl
 		<< "3. Отсортировать граф" << std::endl
 		<< "4. Вывести таблицу связей" << std::endl
+		<< "5. Найти кратчайший путь от одной вершины к другой" << std::endl
 		<< "0. Выйти в общее меню" << std::endl
 		<< "Ввод: ";
 }
@@ -77,7 +78,7 @@ void GasTransmissionNetwork::printTableConnections()
 }
 
 // Заполнение мапов труб и КС для графа
-void GasTransmissionNetwork::fillMapCSInUSe()
+void GasTransmissionNetwork::fillMapCSInUse()
 {
 	mapCSInUse.clear();
 	for (const auto& el : newCSCollection.csCollection)
@@ -155,7 +156,7 @@ void GasTransmissionNetwork::printSortGraph()
 void GasTransmissionNetwork::sortGraph()
 {
 	sortIdCS.clear();
-	fillMapCSInUSe();
+	fillMapCSInUse();
 	fillMapPipeInUse();
 	try
 	{
@@ -168,6 +169,115 @@ void GasTransmissionNetwork::sortGraph()
 		Console::PrintErrorText("\nТопологическая сортировка невозможна, поскольку граф является цикличным!!!");
 	}
 }
+
+// Поиск кратчайшего пути https://prog-cpp.ru/deikstra/
+std::vector<size_t> GasTransmissionNetwork::findPath(size_t outID, size_t inID)
+{
+	const size_t SIZE = mapCSInUse.size();
+	std::vector<size_t> resultPath;
+	std::vector<std::vector<double>> a; a.resize(SIZE); // матрица связей
+	std::vector<double> d; d.resize(SIZE); // минимальное расстояние
+	std::vector<size_t> v; v.resize(SIZE); // посещенные вершины
+	std::unordered_map<size_t, size_t> mapIdIndex; // связи между id-никами и индексами в мапе
+	double temp, min;
+	size_t minindex;
+	size_t counter = 0;
+	for (const auto& cs : mapCSInUse)
+		mapIdIndex.emplace(cs.first, counter++);
+
+	// Инициализация матрицы связей
+	for (size_t i = 0; i < SIZE; i++)
+		a[i].resize(SIZE);
+
+	for (const auto& pipe : mapPipeInUse)
+		a[mapIdIndex[pipe.second.GetOutId()]][mapIdIndex[pipe.second.GetInId()]] = pipe.second.length;
+
+	//Инициализация вершин и расстояний
+	for (size_t i = 0; i < SIZE; i++)
+	{
+		d[i] = 10000;
+		v[i] = 1;
+	}
+	size_t begin_index = mapIdIndex[outID];
+	d[begin_index] = 0;
+	// Шаг алгоритма
+	do {
+		minindex = 10000;
+		min = 10000;
+		for (size_t i = 0; i < SIZE; i++)
+		{ // Если вершину ещё не обошли и вес меньше min
+			if ((v[i] == 1) && (d[i] < min))
+			{ // Переприсваиваем значения
+				min = d[i];
+				minindex = i;
+			}
+		}
+		// Добавляем найденный минимальный вес
+		// к текущему весу вершины
+		// и сравниваем с текущим минимальным весом вершины
+		if (minindex != 10000)
+		{
+			for (size_t i = 0; i < SIZE; i++)
+			{
+				if (a[minindex][i] > 0)
+				{
+					temp = min + a[minindex][i];
+					if (temp < d[i])
+					{
+						d[i] = temp;
+					}
+				}
+			}
+			v[minindex] = 0;
+		}
+	} while (minindex < 10000);
+	
+	// Проверка был ли найден путь, если нет, то выбрасываю исключение
+	if (d[mapIdIndex[inID]] == 10000)
+		throw - 1;
+
+	// Восстановление пути
+	std::vector<size_t> ver; // вектор посещенных вершин
+	size_t end = mapIdIndex[inID]; // индекс конечной вершины
+	ver.push_back(end); // начальный элемент - конечная вершина
+	size_t weight = d[end]; // вес конечной вершины
+	while (end != begin_index) // пока не дошли до начальной вершины
+	{
+		for (size_t i = 0; i < SIZE; i++) // просматриваем все вершины
+			if (a[i][end] != 0)   // если связь есть
+			{
+				size_t temp = weight - a[i][end]; // определяем вес пути из предыдущей вершины
+				if (temp == d[i]) // если вес совпал с рассчитанным
+				{                 // значит из этой вершины и был переход
+					weight = temp; // сохраняем новый вес
+					end = i;       // сохраняем предыдущую вершину
+					ver.push_back(i); // и записываем ее в массив
+				}
+			}
+	}
+	// Переход от индексов к ID
+	for (size_t i = 0; i < ver.size(); i++)
+	{
+		for(const auto& el : mapIdIndex)
+			if (el.second == ver[i])
+				resultPath.push_back(el.first);
+	}
+	std::reverse(resultPath.begin(), resultPath.end());
+	return resultPath;
+}
+
+// Вывод отсортированного пути
+void GasTransmissionNetwork::printPath(const std::vector<size_t>& vectorPath)
+{
+	Console::PrintTitleText("\n\nКратчайший путь:");
+	Console::PrintChar('-', vectorPath.size() * 20 + 1);
+	std::cout << "|";
+	for (const auto& id : vectorPath)
+		std::cout << std::setw(10) << id << std::setw(10) << "|";
+	std::cout << std::endl;
+	Console::PrintChar('-', vectorPath.size() * 20 + 1);
+}
+
 
 // Функция управления Газотранспортной сетью
 void GasTransmissionNetwork::manageNetwork()
@@ -307,6 +417,58 @@ void GasTransmissionNetwork::manageNetwork()
 		case '4':
 		{
 			printTableConnections();
+			system("pause");
+			system("CLS");
+			break;
+		}
+		case '5':
+		{
+			if (!checkingConnections())
+			{
+				Console::PrintErrorText("\nСвязи отсуствуют, сначала создайте связь, только потом вы сможете найти кратчайшие пути.");
+				system("pause");
+				system("CLS");
+				break;
+			}
+			fillMapCSInUse();
+			fillMapPipeInUse();
+			size_t idCSOut;
+			size_t idCSIn;
+			std::cout << "\nТаблица связей:" << std::endl;
+			printTableConnections();
+			while (true)
+			{
+				idCSOut = verification::GetNumericValue<size_t>("\nВведите id КС из графа, которая будет являться началом пути: ",
+					"Id КС положительное целое число, при этом КС с таким id должна была создаться ранее!!!", 1, CompressorStation::GetMaxID());
+				if (mapCSInUse.find(idCSOut) == mapCSInUse.end())
+				{
+					Console::PrintErrorText("КС с данным ID отсутствует в графе, просмотрите таблицу связей более внимательно и повторите ввод!");
+					continue;
+				}
+				else
+					break;
+			}
+			while (true)
+			{
+				idCSIn = verification::GetNumericValue<size_t>("\nВведите id КС из графа, которая будет являться концом пути: ",
+					"Id КС положительное целое число, при этом КС с таким id должна была создаться ранее!!!", 1, CompressorStation::GetMaxID());
+				if (mapCSInUse.find(idCSIn) == mapCSInUse.end())
+				{
+					Console::PrintErrorText("КС с данным ID отсутствует в графе, просмотрите таблицу связей более внимательно и повторите ввод!");
+					continue;
+				}
+				else
+					break;
+			}
+			try
+			{
+				std::vector<size_t> vectorPath = findPath(idCSOut, idCSIn);
+				printPath(vectorPath);
+			}
+			catch (int)
+			{
+				Console::PrintErrorText("Извините, но пути из вершины " + std::to_string(idCSOut) + " в вершину " + std::to_string(idCSIn) + " не существует!");
+			}
 			system("pause");
 			system("CLS");
 			break;

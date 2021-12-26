@@ -1,5 +1,3 @@
-
-
 #ifndef CLASS_CS_H
 #define CLASS_CS_H
 #include <string>
