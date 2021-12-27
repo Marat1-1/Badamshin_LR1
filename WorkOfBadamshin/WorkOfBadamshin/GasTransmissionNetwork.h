@@ -12,6 +12,8 @@ private:
 	std::vector<size_t> sortIdCS;
 	std::unordered_map<size_t, CompressorStation> mapCSInUse;
 	std::unordered_map<size_t, Pipe> mapPipeInUse;
+	std::vector<std::vector<size_t>> Matrix;
+	std::unordered_map<size_t, size_t> mapIdIndex;
 	void printMenu();
 	void printFreePipes();
 	void printFreeCS();
@@ -25,8 +27,11 @@ private:
 	void printGraph();
 	void sortGraph();
 	void printSortGraph();
-	std::vector<size_t> findPath(size_t, size_t);
+	void fillMatrixMapIdIndex();
+	std::vector<size_t> findPath(size_t, size_t, double&);
 	void printPath(const std::vector<size_t>&);
+	bool bfs(std::vector<std::vector<size_t>>, size_t, size_t, std::vector<int>&);
+	int fordFulkerson(size_t, size_t);
 public:
 	// Методы управления сетью
 	void manageNetwork();
