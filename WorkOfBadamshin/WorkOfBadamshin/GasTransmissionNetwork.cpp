@@ -75,7 +75,7 @@ void GasTransmissionNetwork::printTableConnections()
 	Console::PrintChar('-', tableWidth);
 	for (const auto& el : newPipeCollection.pipeCollection)
 		if (el.second.IsUsed())
-			std::cout << "|" << std::setw(tabulation_20) << el.first << std::setw(tabulation_30) << el.second.GetOutId() << std::setw(tabulation_30) << el.second.GetInId() << std::setw(tabulation_30) << el.second.length << std::setw(tabulation_20) << "|" << std::endl;
+			std::cout << "|" << std::setw(tabulation_20) << el.first << std::setw(tabulation_30) << el.second.GetOutId() << std::setw(tabulation_30) << el.second.GetInId() << std::setw(tabulation_30) << (el.second.GetRepairStatus() ? "inf" : std::to_string(el.second.GetLength())) << std::setw(tabulation_20) << "|" << std::endl;
 	Console::PrintChar('-', tableWidth);
 }
 
@@ -172,8 +172,8 @@ void GasTransmissionNetwork::sortGraph()
 	}
 }
 
-// Заполнение матрицы весов
-void GasTransmissionNetwork::fillMatrixMapIdIndex()
+// Заполнение матрицы весов для Дейкстры
+void GasTransmissionNetwork::fillMatrixMapIdIndexForFindPath()
 {
 	Matrix.clear();
 	mapIdIndex.clear();
@@ -188,7 +188,32 @@ void GasTransmissionNetwork::fillMatrixMapIdIndex()
 		Matrix[i].resize(SIZE);
 
 	for (const auto& pipe : mapPipeInUse)
-		Matrix[mapIdIndex[pipe.second.GetOutId()]][mapIdIndex[pipe.second.GetInId()]] = pipe.second.length;
+		if (!pipe.second.GetRepairStatus())
+			Matrix[mapIdIndex[pipe.second.GetOutId()]][mapIdIndex[pipe.second.GetInId()]] = pipe.second.GetLength();
+		else
+			Matrix[mapIdIndex[pipe.second.GetOutId()]][mapIdIndex[pipe.second.GetInId()]] = INT_MAX;
+}
+
+// Заполнение матрицы весов для Форда-Фалкерсона
+void GasTransmissionNetwork::fillMatrixMapIdIndexForFindFlow()
+{
+	Matrix.clear();
+	mapIdIndex.clear();
+	// Заполняем мап связей между id кс и индексом в матрице весов
+	size_t counter = 0;
+	const size_t SIZE = mapCSInUse.size();
+	Matrix.resize(SIZE);
+	for (const auto& cs : mapCSInUse)
+		mapIdIndex.emplace(cs.first, counter++);
+	// Инициализация матрицы связей
+	for (size_t i = 0; i < SIZE; i++)
+		Matrix[i].resize(SIZE);
+
+	for (const auto& pipe : mapPipeInUse)
+		if (!pipe.second.GetRepairStatus())
+			Matrix[mapIdIndex[pipe.second.GetOutId()]][mapIdIndex[pipe.second.GetInId()]] = pipe.second.GetProductivity();
+		else
+			Matrix[mapIdIndex[pipe.second.GetOutId()]][mapIdIndex[pipe.second.GetInId()]] = 0;
 }
 
 // Поиск кратчайшего пути https://prog-cpp.ru/deikstra/
@@ -200,7 +225,7 @@ std::vector<size_t> GasTransmissionNetwork::findPath(size_t outID, size_t inID, 
 	std::vector<size_t> v; v.resize(SIZE); // посещенные вершины
 	double temp, min;
 	size_t minindex;
-	fillMatrixMapIdIndex(); // Заполняем матрицу весов и связей
+	fillMatrixMapIdIndexForFindPath(); // Заполняем матрицу весов и связей
 
 	//Инициализация вершин и расстояний
 	for (size_t i = 0; i < SIZE; i++)
@@ -335,7 +360,7 @@ bool GasTransmissionNetwork::bfs(std::vector<std::vector<size_t>> rGraph, size_t
 // Returns the maximum flow from s to t in the given graph
 int GasTransmissionNetwork::fordFulkerson(size_t outID, size_t inID)
 {
-	fillMatrixMapIdIndex();
+	fillMatrixMapIdIndexForFindFlow();
 	int u, v;
 	size_t s = mapIdIndex[outID];
 	size_t t = mapIdIndex[inID];

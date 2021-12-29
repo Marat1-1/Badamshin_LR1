@@ -27,7 +27,8 @@ private:
 	void printGraph();
 	void sortGraph();
 	void printSortGraph();
-	void fillMatrixMapIdIndex();
+	void fillMatrixMapIdIndexForFindPath();
+	void fillMatrixMapIdIndexForFindFlow();
 	std::vector<size_t> findPath(size_t, size_t, double&);
 	void printPath(const std::vector<size_t>&);
 	bool bfs(std::vector<std::vector<size_t>>, size_t, size_t, std::vector<int>&);

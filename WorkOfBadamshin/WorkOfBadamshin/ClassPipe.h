@@ -12,11 +12,11 @@ private:
 	static size_t maxIdPipe; // максимальный id среди элементов
 	size_t inId = 0;
 	size_t outId = 0;
-	bool used;
-public:
 	double length;
 	double diameter;
 	bool repair;
+	bool used;
+public:
 	Pipe(); // в конструкторе идёт работа с пользователем, запрашиваются данные на ввод
 	Pipe(std::ifstream&); // Конструктор для считывания из файла
 	void GhangePipe();
@@ -25,6 +25,9 @@ public:
 	bool IsUsed() const;
 	void SetInId(size_t);
 	void SetOutId(size_t);
+	bool GetRepairStatus() const;
+	double GetLength() const;
+	double GetProductivity() const;
 	size_t GetInId() const;
 	size_t GetOutId() const;
 	static size_t GetMaxID();

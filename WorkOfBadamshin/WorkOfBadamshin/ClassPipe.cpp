@@ -82,3 +82,18 @@ size_t Pipe::GetMaxID()
 {
 	return maxIdPipe;
 }
+
+bool Pipe::GetRepairStatus() const
+{
+	return repair;
+}
+
+double Pipe::GetLength() const
+{
+	return length;
+}
+
+double Pipe::GetProductivity() const
+{
+	return sqrt(diameter*diameter*diameter*diameter*diameter / length);
+}
